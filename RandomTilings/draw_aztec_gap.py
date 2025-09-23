@@ -8,6 +8,7 @@ def draw_aztec_gap(n,w,gap,edge=0,dpi=200,rotated=True,show_figure=True):
     N = 2*n
     end = N
 
+    w = w.astype(float)
     W = weight_aztec(n,w)
     C = algorithm_reduction_weight(W)
     logZnDen = log_partition_function(C)
@@ -38,4 +39,5 @@ def draw_aztec_gap(n,w,gap,edge=0,dpi=200,rotated=True,show_figure=True):
     
     M = shuffling(C)
     fig = draw_dominos(M,edge,dpi,rotated,show_figure)
+
     return [logPn, logZnNum, logZnDen], fig
