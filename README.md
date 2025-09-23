@@ -1,7 +1,7 @@
 Random Tilings
 ==============
 
-This project provides the Python package `RandomTilings`, which makes it possible to create random Hexagon and Aztec diamond tilings.
+This project provides the Python package `RandomTilings`, which makes it possible to generate random tilings of the Aztec diamond and the hexagon for a given doubly periodic weighting.
 It is a translation of the Matlab program `MatlabTilings` by Christophe Charlier, which is based on the shuffling algorithm as described in  [arXiv:0111034](https://arxiv.org/abs/math/0111034).
 The original Matlab implementation can be found on his [hompage](https://sites.google.com/view/cchar/home). We are grateful to Christophe Charlier for
 allowing us to make this program publicly available.
