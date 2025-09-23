@@ -13,11 +13,11 @@ def draw_dominos(M,edge,dpi,rotated,show_figure):
     if rotated:
         ax.set_xlim(-3*N//4-margin+1,3*N//4+margin)
         ax.set_ylim(-margin,3*N//2+margin)
-        ax.set_aspect('equal')
-        ax.axis('off')
     else:
         ax.set_xlim(-margin,N+1+margin)
         ax.set_ylim(-margin,N+1+margin)
+    ax.set_aspect('equal')
+    ax.axis('off')
 
     points_yellow,points_red,points_blue,points_green = comp_poly_points(M)
     patch_red = ax.add_collection(PatchCollection([Polygon(points) for points in points_yellow]
@@ -84,4 +84,5 @@ def comp_poly_points(M):
                     P3 += [list(zip(X,Y))]
                 else:
                     P4 += [list(zip(X,Y))]            
+
     return P1[1:],P2[1:],P3[1:],P4[1:]
