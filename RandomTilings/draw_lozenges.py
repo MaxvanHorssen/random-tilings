@@ -15,6 +15,7 @@ def draw_lozenges(n,M,a,b,c,edge,dpi,show_figure):
     ax.set_ylim(-B-margin,2*A+C+margin)
     ax.set_aspect('equal')
     ax.axis('off')
+    ax.set_aspect(1/(np.sqrt(3)/2), adjustable='box')
 
     points_red,points_cyan,points_yellow = comp_poly_points(M,A,B,C)
     ax.add_collection(PatchCollection([Polygon(points) for points in points_red]
@@ -81,4 +82,5 @@ def comp_poly_points(M,A,B,C):
                     P2 += [list(zip(X,Y))]
                 else:
                     P3 += [list(zip(X,Y))]
+
     return P1[1:],P2[1:],P3[1:]
