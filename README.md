@@ -209,6 +209,7 @@ fig = draw_aztec(n,w,edge=1,dpi=100)
 <p align="center">
 <img width="383" height="389" alt="image" src="https://github.com/user-attachments/assets/9be46e59-0748-4d63-a01c-94242e9f0d27" />
 </p>
+
 In case one wants it non-rotated:
 ```python
 import numpy as np
@@ -225,7 +226,6 @@ fig = draw_aztec(n,w,edge=1,dpi=100,rotated=False)
 <p align="center">
 <img width="389" height="389" alt="image" src="https://github.com/user-attachments/assets/4b4a17da-9ab8-4c33-8a26-43d660a00f5f" />
 </p>
-
 
 ### Random tilings of the Aztec diamond with gaps
 To create a random tiling of the Aztec diamond with gaps, call:
