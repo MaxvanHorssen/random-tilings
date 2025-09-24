@@ -12,16 +12,24 @@ allowing us to make this program publicly available.
 </p>
 
 
-
-
-Let us begin with an important note. The Python program uses the Numba package to compile certain
-routines, resulting in a drastic performance improvement. This package needs to be installed to be
-able to run the program. The disadvantage of this package is that the type-handling is more delicate
-than is usually the case in Python; please be aware of this fact. In addition, the packages NumPy and
-Matplotlib are also required.
-In the current version, not all options from MatlabTilings have been implemented in the Python
+# Important Notes
+A documentation for the the rotuines provided by `RandomTilings` can be found in the pdf `Documentation for Random Tilings`. 
+In the current version, not all options from `MatlabTilings` have been implemented in the Python
 program. Most notably, the program only produces images of tilings, and not of the corresponding
-non-intersecting path systems. This document mainly discusses the necessary changes important for
-the Python program. Some parts of the Help file for MatlabTilings are copied for context. For a
-more complete description, the reader should consult the Help file; please keep in mind that only some
+non-intersecting path systems. Therefore, `Documentation for Random Tilings` mainly discusses the necessary changes important for
+the Python program. Some parts of the [`Help file`](https://sites.google.com/view/cchar/random-tilings)  for `MatlabTilings` are copied for context. For a
+more complete description, the reader should consult the `Help file`; please keep in mind that only some
 features are available in the Python program.
+
+For the example usage of the routines provided by `RandomTilings` have a look in the Jupyter notebook `Examples - How to use` or in the `How to use` section below.
+
+**The Power of Numba**      
+The creation of these Tilings is numerically expensive. In order to drastically improve the performance this package makes heavy use of the `numba` compiler `jit`.
+Therefore, the preinstallation of `numba` is required. Also importing `RandomTilings` might take some time, as all subroutines have to be compiled.
+
+
+# Acknowledgments
+
+# How to get started
+
+# Examples
