@@ -132,7 +132,7 @@ fig = draw_hexagon(n,w,1,1,1,dpi=100)
 </p>
 
 ## Random tilings of the hexagon with gaps
-In order to create a random tiling of a hexagon with gaps, call:
+In order to create a random tiling of a hexagon with gaps, call the routine:
 ```python
 draw_hexagon_gap(n,w,gap,a=1,b=1,c=1,edge=0,dpi=200,show_figure=True)
 ```
@@ -172,6 +172,26 @@ _,fig = draw_hexagon_gap(n,w,gap,a,b,c,dpi=100)
 <p align="center">
 <img width="311" height="389" alt="image" src="https://github.com/user-attachments/assets/e163dbb5-70c3-4de8-94cb-6d6dbf041aaa" />
 </p>
+
+To compute only the log partition functions, call the routine:
+```python
+log_partition_function_hexagon_gap(n,w,gap)
+```
+
+Example:
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+from RandomTilings import *
+
+n     = 1                                 # Side length
+a,b,c = 120,120,80                        # Side length multiplicator
+w     = np.array([[1,1]]).T               # Weighting
+gap   = np.array([[130,100.5,140.5]])     # Gap
+
+# Compute the log partition functions for the hexagon with a gap.
+vec = log_partition_function_hexagon_gap(n,w,gap,a,b,c) 
+```
 
 ## Random tilings of the Aztec diamond
 To create a random tiling of the Aztec diamond, call the routine:
@@ -228,7 +248,7 @@ fig = draw_aztec(n,w,edge=1,dpi=100,rotated=False)
 </p>
 
 ### Random tilings of the Aztec diamond with gaps
-To create a random tiling of the Aztec diamond with gaps, call:
+To create a random tiling of the Aztec diamond with gaps, call the routine:
 ```python
 draw_aztec_gap(n,w,gap,edge=0,dpi=200,rotated=True,show_figure=True)
 ```
@@ -267,3 +287,22 @@ _,fig = draw_aztec_gap(n,w,gap,dpi=100)
 <p align="center">
 <img width="389" height="389" alt="image" src="https://github.com/user-attachments/assets/bbda479c-e3b1-4a94-a48b-b3cad4a8d0c8" />
 </p>
+
+To compute only the log partition functions, call the routine:
+```python
+log_partition_function_aztec_gap(n,w,gap)
+```
+
+Example:
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+from RandomTilings import *
+
+n   = 300                               # Size
+w   = np.array([[1]]).T                 # Weighting
+gap = np.array([[2*150-1,80,150]])      # Gap
+
+# Compute the log partition functions for the Aztec diamond with a gap.
+vec = log_partition_function_aztec_gap(n,w,gap) 
+```
