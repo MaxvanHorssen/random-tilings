@@ -3,11 +3,11 @@ from RandomTilings.algorithm_reduction_weight import algorithm_reduction_weight
 from RandomTilings.shuffling import shuffling
 from RandomTilings.draw_dominos import draw_dominos
 
-def draw_aztec(n,w,edge=0,dpi=200,rotated=True,show_figure=True):
+def draw_aztec(n,w,edge=0,paths=False,dpi=200,rotated=True,show_figure=True):
     w = w.astype(float)
     W = weight_aztec(n,w)
     C = algorithm_reduction_weight(W)
     M = shuffling(C)
-    fig = draw_dominos(M,edge,dpi,rotated,show_figure)
+    fig = draw_dominos(M,edge,paths,dpi,rotated,show_figure)
 
     return fig

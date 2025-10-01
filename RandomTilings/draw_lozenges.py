@@ -8,7 +8,8 @@ def draw_lozenges(n,M,a,b,c,edge,paths,dpi,show_figure):
     A = int(np.round(a*n))
     B = int(np.round(b*n))
     C = int(np.round(c*n))
-    
+    path_scaling = 10/max(A,B,C)
+
     margin = 1
     fig, ax = plt.subplots(dpi=dpi)
     ax.set_xlim(-margin,2*B+2*C+margin)
@@ -27,8 +28,8 @@ def draw_lozenges(n,M,a,b,c,edge,paths,dpi,show_figure):
                                         ,facecolor='none',edgecolor='k',linewidth=edge))
 
         points_red,points_cyan,points_yellow = compute_points(M,A,B,C,True)
-        ax.add_collection(LineCollection(points_red,colors=(1,0,0),linewidths=10/n))
-        ax.add_collection(LineCollection(points_cyan,colors=(0,1,1),linewidths=10/n))
+        ax.add_collection(LineCollection(points_red,colors=(0,0,1),linewidths=path_scaling))
+        ax.add_collection(LineCollection(points_cyan,colors=(0,0,1),linewidths=path_scaling))
     else:
         points_red,points_cyan,points_yellow = compute_points(M,A,B,C,False)
         ax.add_collection(PatchCollection([Polygon(point) for point in points_red]
@@ -66,11 +67,11 @@ def isinhexagon(x2,y2,A,B,C):
 
 @jit()
 def points_path(x,y):
-    type_loz2 = type_of_lozenge(x,y)
-    if type_loz2 == 1:
+    type_loz = type_of_lozenge(x,y)
+    if type_loz == 1:
         X1 = x+np.array([-1,1])
         Y1 = y+np.array([-1,1])-np.array([(x-1)//2,(x+1)//2])
-    elif type_loz2 == 2:
+    elif type_loz == 2:
         X1 = x+np.array([-1,1])
         Y1 = y+np.array([0,0])-np.array([(x-1)//2,(x+1)//2])
     else:
@@ -80,11 +81,11 @@ def points_path(x,y):
 
 @jit()
 def points_lozenge(x,y):
-    type_loz2 = type_of_lozenge(x,y)
-    if type_loz2 == 1:
+    type_loz = type_of_lozenge(x,y)
+    if type_loz == 1:
         X2 = x+np.array([-1,-1,1,1])
         Y2 = y+np.array([-2,0,2,0])-np.array([(x-1)//2,(x-1)//2,(x+1)//2,(x+1)//2])
-    elif type_loz2 == 2:
+    elif type_loz == 2:
         X2 = x+np.array([-1,-1,1,1])
         Y2 = y+np.array([-1,1,1,-1])-np.array([(x-1)//2,(x-1)//2,(x+1)//2,(x+1)//2])
     else:
