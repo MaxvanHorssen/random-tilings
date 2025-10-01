@@ -14,8 +14,7 @@ allowing us to make this package publicly available.
 # Important Notes
 A documentation for the the routines provided by `Randomtilings` can be found in the pdf `Documentation for Randomtilings`. 
 In the current version, not all options from `Matlabtilings` have been implemented in the Python
-package. Most notably, the package only produces images of tilings, and not of the corresponding
-non-intersecting path systems. Therefore, `Documentation for RandomTilings` mainly discusses the necessary changes important for
+package. Therefore, `Documentation for RandomTilings` mainly discusses the necessary changes important for
 the Python package. Some parts of the [`Help file`](https://sites.google.com/view/cchar/random-tilings)  for `Matlabtilings` are copied for context. For a
 more complete description, the reader should consult the [`Help file`](https://sites.google.com/view/cchar/random-tilings); please keep in mind that only some
 features are available in the Python package.
@@ -53,9 +52,9 @@ Doing so it will prevent the issue that each image is plotted twice.
 
 # Example - How to use
 ## Random tilings of a hexagon
-To create random tilings of a hexagon, use the function: 
+To create random tilings of a hexagon, call the routine: 
 ```python
-draw_hexagon(n,w,a=1,b=1,c=1,edge=0,dpi=200,show_figure=True)
+draw_hexagon(n,w,a=1,b=1,c=1,edge=0,paths=False,dpi=200,show_figure=True)
 ```
 The inputs correspond to the following:
  - `n`           : positive integer, denoting the size of the tiling.
@@ -63,7 +62,8 @@ The inputs correspond to the following:
  - `a,b,c`       : positive integer, denotinge the side length multiplicator.
                    They can be used to create tilings of a special shape.
  - `edge`        : float, giving the edge width of the tilings. If `edge=0`, then no
-                   edges will be displayed. 
+                   edges will be displayed.
+ - `paths`       : If true, the plot will be shown with paths instead of tiles.
  - `dpi`         : integer, defining the resolution used for the resulting figure.
                    Note, while using Jupyter notebook it will also increase the plot.
  - `show_figure` : If true, the plot will be shown atomatically.
@@ -134,7 +134,7 @@ fig = draw_hexagon(n,w,1,1,1,dpi=100)
 ## Random tilings of the hexagon with gaps
 In order to create a random tiling of a hexagon with gaps, call the routine:
 ```python
-draw_hexagon_gap(n,w,gap,a=1,b=1,c=1,edge=0,dpi=200,show_figure=True)
+draw_hexagon_gap(n,w,gap,a=1,b=1,c=1,edge=0,paths=False,dpi=200,show_figure=True)
 ```
 The inputs correspond to the following:
  - `n`           : positive integer, denoting the size of the tiling.
@@ -143,7 +143,8 @@ The inputs correspond to the following:
  - `a,b,c`       : positive integer, denotinge the side length multiplicator.
                    They can be used to create tilings of a special shape.
  - `edge`        : float, giving the edge width of the tilings. If `edge=0`, then no
-                   edges will be displayed. 
+                   edges will be displayed.
+ - `paths`       : If true, the plot will be shown with paths instead of tiles.
  - `dpi`         : integer, defining the resolution used for the resulting figure.
                    Note, while using Jupyter notebook it will also increase the plot.
  - `show_figure` : If true, the plot will be shown atomatically.
@@ -186,23 +187,24 @@ from RandomTilings import *
 
 n     = 1                                 # Side length
 a,b,c = 120,120,80                        # Side length multiplicator
-w     = np.array([[1,1]]).T               # Weighting
+w     = np.array([[1,1]]).T               # Weighting matrix
 gap   = np.array([[130,100.5,140.5]])     # Gap
 
-# Compute the log partition functions for the hexagon with a gap.
+# Compute the log partition functions for the hexagon with a gap
 vec = log_partition_function_hexagon_gap(n,w,gap,a,b,c) 
 ```
 
 ## Random tilings of the Aztec diamond
 To create a random tiling of the Aztec diamond, call the routine:
 ```python
-draw_aztec(n,w,edge=0,dpi=200,rotated=True,show_figure=True)
+draw_aztec(n,w,edge=0,paths=False,dpi=200,rotated=True,show_figure=True)
 ```
 The inputs correspond to the following:
  - `n`           : positive integer, denoting the size of the tiling.
  - `w`           : 2d - numpy.ndarray, giving the weighting  used for the hexagon tiling.
  - `edge`        : float, giving the edge width of the tilings. If `edge=0`, then no
-                   edges will be displayed. 
+                   edges will be displayed.
+ - `paths`       : If true, the plot will be shown with paths instead of tiles.
  - `dpi`         : integer, defining the resolution used for the resulting figure.
                    Note, while using Jupyter notebook it will also increase the plot.
  - `rotated`     : bool, if set to `False` the Aztec diamond will not be rotated and will appear as a 'regular square'.
@@ -220,10 +222,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from RandomTilings import *
 
-n = 30                                # Size
-w = np.array([[1]]).T                 # Weighting
+n = 30                                # Side length
+w = np.array([[1]]).T                 # Weighting matrix
 
-# Creating the random tiling of the Aztec diamond, without rotating the image.
+# Creating the random tiling of the Aztec diamond, without rotating the image
 fig = draw_aztec(n,w,edge=1,dpi=100) 
 ```
 <p align="center">
@@ -236,8 +238,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from RandomTilings import *
 
-n = 30                                # Size
-w = np.array([[1]]).T                 # Weighting
+n = 30                                # Side length
+w = np.array([[1]]).T                 # Weighting matrix
 
 ## Random tilings of the Aztec diamond with gaps
 fig = draw_aztec(n,w,edge=1,dpi=100,rotated=False) 
@@ -250,7 +252,7 @@ fig = draw_aztec(n,w,edge=1,dpi=100,rotated=False)
 ### Random tilings of the Aztec diamond with gaps
 To create a random tiling of the Aztec diamond with gaps, call the routine:
 ```python
-draw_aztec_gap(n,w,gap,edge=0,dpi=200,rotated=True,show_figure=True)
+draw_aztec_gap(n,w,gap,edge=0,paths=False,dpi=200,rotated=True,show_figure=True)
 ```
 
 The inputs correspond to the following:
@@ -258,7 +260,8 @@ The inputs correspond to the following:
  - `w`           : 2d - numpy.ndarray, giving the weighting  used for the hexagon tiling.
  - `gap`         : 2d - numpy.ndarray of shape (N,4), indicating the location and size of the gaps.
  - `edge`        : float, giving the edge width of the tilings. If `edge=0`, then no
-                   edges will be displayed. 
+                   edges will be displayed.
+ - `paths`       : If true, the plot will be shown with paths instead of tiles.
  - `dpi`         : integer, defining the resolution used for the resulting figure.
                    Note, while using Jupyter notebook it will also increase the plot.
  - `rotated`     : bool, if set to `False` the Aztec diamond will not be rotated and will appear as a 'regular square'.
@@ -277,11 +280,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from RandomTilings import *
 
-n   = 300                               # Size
-w   = np.array([[1]]).T                 # Weighting
+n   = 300                               # Side length
+w   = np.array([[1]]).T                 # Weighting matrix
 gap = np.array([[2*150-1,80,150]])      # Gap
 
-# Creating the random tiling of the Aztec diamond with a gap.
+# Creating the random tiling of the Aztec diamond with a gap
 _,fig = draw_aztec_gap(n,w,gap,dpi=100) 
 ```
 <p align="center">
@@ -299,10 +302,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from RandomTilings import *
 
-n   = 300                               # Size
-w   = np.array([[1]]).T                 # Weighting
+n   = 300                               # Side length
+w   = np.array([[1]]).T                 # Weighting matrix
 gap = np.array([[2*150-1,80,150]])      # Gap
 
-# Compute the log partition functions for the Aztec diamond with a gap.
+# Compute the log partition functions for the Aztec diamond with a gap
 vec = log_partition_function_aztec_gap(n,w,gap) 
 ```
