@@ -4,7 +4,7 @@ from numba import jit
 import matplotlib.pyplot as plt
 import numpy as np
 
-def draw_lozenges(n,M,a,b,c,edge,paths,dpi,show_figure):
+def draw_lozenges(n,M,a,b,c,edge,paths,dpi,coloring,show_figure):
     A = int(np.round(a*n))
     B = int(np.round(b*n))
     C = int(np.round(c*n))
@@ -31,13 +31,26 @@ def draw_lozenges(n,M,a,b,c,edge,paths,dpi,show_figure):
         ax.add_collection(LineCollection(points_red,colors=(0,0,1),linewidths=path_scaling))
         ax.add_collection(LineCollection(points_cyan,colors=(0,0,1),linewidths=path_scaling))
     else:
+        if coloring == 'standard':
+            color_red = (1,0,0)
+            color_cyan = (0,1,1)
+            color_yellow = (1,1,0)
+        elif coloring == 'alternative':
+            color_red = (5/255,50/255,100/255)
+            color_cyan = (120/255,180/255,200/255)
+            color_yellow = (135/255,60/255,35/255)
+        else:
+            color_red = (0.25,0.25,0.25)
+            color_cyan = (0.5,0.5,0.5)
+            color_yellow = (0.75,0.75,0.75)
+    
         points_red,points_cyan,points_yellow = compute_points(M,A,B,C,False)
         ax.add_collection(PatchCollection([Polygon(point) for point in points_red]
-                                        ,facecolor=(1,0,0),edgecolor='k',linewidth=edge))
+                                        ,facecolor=color_red,edgecolor='k',linewidth=edge))
         ax.add_collection(PatchCollection([Polygon(point) for point in points_cyan]
-                                        ,facecolor=(0,1,1),edgecolor='k',linewidth=edge))
+                                        ,facecolor=color_cyan,edgecolor='k',linewidth=edge))
         ax.add_collection(PatchCollection([Polygon(point) for point in points_yellow]
-                                        ,facecolor=(1,1,0),edgecolor='k',linewidth=edge))
+                                        ,facecolor=color_yellow,edgecolor='k',linewidth=edge))
 
     if show_figure:
         plt.show()
