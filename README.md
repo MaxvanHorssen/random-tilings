@@ -2,7 +2,7 @@ Random tilings
 ==============
 
 This project provides the Python package `Randomtilings`, which makes it possible to generate random tilings of the Aztec diamond and the hexagon for doubly periodic weighting s.
-It is a translation of the Matlab program `Matlabtilings` by Christophe Charlier, which is based on the shuffling algorithm as described in  [arXiv:0111034](https://arxiv.org/abs/math/0111034).
+It is a translation of the Matlab program `Matlabtilings` by Christophe Charlier, which is based on the shuffling algorithm as described in [arXiv:0111034](https://arxiv.org/abs/math/0111034).
 The original Matlab implementation can be found on his [homepage](https://sites.google.com/view/cchar/home). We are grateful to Christophe Charlier for
 allowing us to make this package publicly available.
 
@@ -54,7 +54,7 @@ Doing so it will prevent the issue that each image is plotted twice.
 ## Random tilings of a hexagon
 To create random tilings of a hexagon, call the routine: 
 ```python
-draw_hexagon(n,w,a=1,b=1,c=1,edge=0,paths=False,dpi=200,show_figure=True)
+draw_hexagon(n,w,a=1,b=1,c=1,edge=0,paths=False,dpi=200,coloring='standard',show_figure=True)
 ```
 The inputs correspond to the following:
  - `n`           : positive integer, denoting the size of the tiling.
@@ -66,6 +66,8 @@ The inputs correspond to the following:
  - `paths`       : If true, the plot will be shown with paths instead of tiles.
  - `dpi`         : integer, defining the resolution used for the resulting figure.
                    Note, while using Jupyter notebook it will also increase the plot.
+ - `coloring`    : determines the coloring scheme of the resulting figure. Three options are available: 'standard',
+                   'alternative' (taken from [arXiv:2402.08798](https://arxiv.org/abs/math/2402.08798).), and 'gray'. 
  - `show_figure` : If true, the plot will be shown atomatically.
 
 Output:
@@ -134,7 +136,7 @@ fig = draw_hexagon(n,w,1,1,1,dpi=100)
 ## Random tilings of the hexagon with gaps
 In order to create a random tiling of a hexagon with gaps, call the routine:
 ```python
-draw_hexagon_gap(n,w,gap,a=1,b=1,c=1,edge=0,paths=False,dpi=200,show_figure=True)
+draw_hexagon_gap(n,w,gap,a=1,b=1,c=1,edge=0,paths=False,dpi=200,coloring='standard',show_figure=True)
 ```
 The inputs correspond to the following:
  - `n`           : positive integer, denoting the size of the tiling.
@@ -147,6 +149,8 @@ The inputs correspond to the following:
  - `paths`       : If true, the plot will be shown with paths instead of tiles.
  - `dpi`         : integer, defining the resolution used for the resulting figure.
                    Note, while using Jupyter notebook it will also increase the plot.
+ - `coloring`    : determines the coloring scheme of the resulting figure. Three options are available: 'standard',
+                   'alternative' (taken from [arXiv:2402.08798](https://arxiv.org/abs/math/2402.08798).), and 'gray'.          
  - `show_figure` : If true, the plot will be shown atomatically.
 
 Output:
@@ -197,7 +201,7 @@ vec = log_partition_function_hexagon_gap(n,w,gap,a,b,c)
 ## Random tilings of the Aztec diamond
 To create a random tiling of the Aztec diamond, call the routine:
 ```python
-draw_aztec(n,w,edge=0,paths=False,dpi=200,rotated=True,show_figure=True)
+draw_aztec(n,w,edge=0,paths=False,dpi=200,rotated=True,coloring='standard',show_figure=True)
 ```
 The inputs correspond to the following:
  - `n`           : positive integer, denoting the size of the tiling.
@@ -208,6 +212,8 @@ The inputs correspond to the following:
  - `dpi`         : integer, defining the resolution used for the resulting figure.
                    Note, while using Jupyter notebook it will also increase the plot.
  - `rotated`     : bool, if set to `False` the Aztec diamond will not be rotated and will appear as a 'regular square'.
+ - `coloring`    : determines the coloring scheme of the resulting figure. Four options are available: 'standard',
+                   'alternative' (taken from [arXiv:2402.08798](https://arxiv.org/abs/math/2402.08798)), 'gray', and 'aztec gray' (custom-made for the 2x2-periodic Aztec diamond, taken from [arXiv:1410.2385](https://arxiv.org/abs/math/1410.2385)).
  - `show_figure` : If true, the plot will be shown atomatically.
 
 Output:
@@ -252,7 +258,7 @@ fig = draw_aztec(n,w,edge=1,dpi=100,rotated=False)
 ### Random tilings of the Aztec diamond with gaps
 To create a random tiling of the Aztec diamond with gaps, call the routine:
 ```python
-draw_aztec_gap(n,w,gap,edge=0,paths=False,dpi=200,rotated=True,show_figure=True)
+draw_aztec_gap(n,w,gap,edge=0,paths=False,dpi=200,rotated=True,coloring='standard',show_figure=True)
 ```
 
 The inputs correspond to the following:
@@ -265,6 +271,8 @@ The inputs correspond to the following:
  - `dpi`         : integer, defining the resolution used for the resulting figure.
                    Note, while using Jupyter notebook it will also increase the plot.
  - `rotated`     : bool, if set to `False` the Aztec diamond will not be rotated and will appear as a 'regular square'.
+ - `coloring`    : determines the coloring scheme of the resulting figure. Four options are available: 'standard',
+                   'alternative' (taken from [arXiv:2402.08798](https://arxiv.org/abs/math/2402.08798)), 'gray', and 'aztec gray' (custom-made for the 2x2-periodic Aztec diamond, taken from [arXiv:1410.2385](https://arxiv.org/abs/math/1410.2385)).
  - `show_figure` : If true, the plot will be shown atomatically.
 
 Output:
