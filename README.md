@@ -66,8 +66,8 @@ The inputs correspond to the following:
  - `paths`       : If true, the plot will be shown with paths instead of tiles.
  - `dpi`         : integer, defining the resolution used for the resulting figure.
                    Note, while using Jupyter notebook it will also increase the plot.
- - `coloring`    : determines the coloring scheme of the resulting figure. Three options are available: 'standard',
-                   'alternative' (taken from [arXiv:2402.08798](https://arxiv.org/abs/math/2402.08798).), and 'gray'. 
+ - `coloring`    : determines the color scheme of the resulting figure. Three options are available: 'standard',
+                   'alternative' (taken from [arXiv:2402.08798](https://arxiv.org/abs/2402.08798)), and 'gray'. 
  - `show_figure` : If true, the plot will be shown atomatically.
 
 Output:
@@ -149,8 +149,8 @@ The inputs correspond to the following:
  - `paths`       : If true, the plot will be shown with paths instead of tiles.
  - `dpi`         : integer, defining the resolution used for the resulting figure.
                    Note, while using Jupyter notebook it will also increase the plot.
- - `coloring`    : determines the coloring scheme of the resulting figure. Three options are available: 'standard',
-                   'alternative' (taken from [arXiv:2402.08798](https://arxiv.org/abs/math/2402.08798).), and 'gray'.          
+ - `coloring`    : determines the color scheme of the resulting figure. Three options are available: 'standard',
+                   'alternative' (taken from [arXiv:2402.08798](https://arxiv.org/abs/2402.08798)), and 'gray'.          
  - `show_figure` : If true, the plot will be shown atomatically.
 
 Output:
@@ -212,8 +212,8 @@ The inputs correspond to the following:
  - `dpi`         : integer, defining the resolution used for the resulting figure.
                    Note, while using Jupyter notebook it will also increase the plot.
  - `rotated`     : bool, if set to `False` the Aztec diamond will not be rotated and will appear as a 'regular square'.
- - `coloring`    : determines the coloring scheme of the resulting figure. Four options are available: 'standard',
-                   'alternative' (taken from [arXiv:2402.08798](https://arxiv.org/abs/math/2402.08798)), 'gray', and 'aztec gray' (custom-made for the 2x2-periodic Aztec diamond, taken from [arXiv:1410.2385](https://arxiv.org/abs/math/1410.2385)).
+ - `coloring`    : determines the color scheme of the resulting figure. Four options are available: 'standard',
+                   'alternative' (taken from [arXiv:2402.08798](https://arxiv.org/abs/2402.08798)), 'gray', and 'aztec gray' (custom-made for the 2x2-periodic Aztec diamond, taken from [arXiv:1410.2385](https://arxiv.org/abs/1410.2385)).
  - `show_figure` : If true, the plot will be shown atomatically.
 
 Output:
@@ -271,8 +271,8 @@ The inputs correspond to the following:
  - `dpi`         : integer, defining the resolution used for the resulting figure.
                    Note, while using Jupyter notebook it will also increase the plot.
  - `rotated`     : bool, if set to `False` the Aztec diamond will not be rotated and will appear as a 'regular square'.
- - `coloring`    : determines the coloring scheme of the resulting figure. Four options are available: 'standard',
-                   'alternative' (taken from [arXiv:2402.08798](https://arxiv.org/abs/math/2402.08798)), 'gray', and 'aztec gray' (custom-made for the 2x2-periodic Aztec diamond, taken from [arXiv:1410.2385](https://arxiv.org/abs/math/1410.2385)).
+ - `coloring`    : determines the color scheme of the resulting figure. Four options are available: 'standard',
+                   'alternative' (taken from [arXiv:2402.08798](https://arxiv.org/abs/2402.08798)), 'gray', and 'aztec gray' (custom-made for the 2x2-periodic Aztec diamond, taken from [arXiv:1410.2385](https://arxiv.org/abs/1410.2385)).
  - `show_figure` : If true, the plot will be shown atomatically.
 
 Output:
