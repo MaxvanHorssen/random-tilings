@@ -4,6 +4,7 @@ from matplotlib import transforms
 from numba import jit
 import matplotlib.pyplot as plt
 import numpy as np
+import re
 
 def draw_dominos(M,edge,paths,dpi,rotated,coloring,show_figure):
     N = M.shape[0]
@@ -22,87 +23,111 @@ def draw_dominos(M,edge,paths,dpi,rotated,coloring,show_figure):
     ax.axis('off')
 
     if paths:
-        points_yellow,points_red,points_blue,points_green = compute_points(M,False)
-        patch_yellow = ax.add_collection(PatchCollection([Polygon(points) for points in points_yellow]
+        if coloring == 'standard':
+            color_east = (0.4,0.4,1)
+            color_south = (0.4,0.4,1)
+            color_west = (0.4,0.4,1)
+        else:
+            rgb_values = [tuple(float(val)/255 for val in rgb) for rgb in re.findall(r'\((\d+),(\d+),(\d+)\)', coloring)]
+            if len(rgb_values) == 3:
+                color_east = rgb_values[0]
+                color_south = rgb_values[1]
+                color_west = rgb_values[2]
+            else:
+                print('Invalid coloring')
+                return 'Invalid coloring'
+
+        points_north,points_east,points_south,points_west = compute_points(M,False)
+        patch_north = ax.add_collection(PatchCollection([Polygon(points) for points in points_north]
                                         ,facecolor='none',edgecolor='k',linewidth=edge))
-        patch_red = ax.add_collection(PatchCollection([Polygon(points) for points in points_red]
+        patch_east = ax.add_collection(PatchCollection([Polygon(points) for points in points_east]
                                         ,facecolor='none',edgecolor='k',linewidth=edge))
-        patch_blue = ax.add_collection(PatchCollection([Polygon(points) for points in points_blue]
+        patch_south = ax.add_collection(PatchCollection([Polygon(points) for points in points_south]
                                         ,facecolor='none',edgecolor='k',linewidth=edge))
-        patch_green = ax.add_collection(PatchCollection([Polygon(points) for points in points_green]
+        patch_west = ax.add_collection(PatchCollection([Polygon(points) for points in points_west]
                                         ,facecolor='none',edgecolor='k',linewidth=edge))
 
-        points_yellow,points_red,points_blue,points_green = compute_points(M,True)
-        lines_yellow = ax.add_collection(LineCollection(points_yellow,colors=(0,0,1),linewidths=path_scaling))
-        lines_blue = ax.add_collection(LineCollection(points_blue,colors=(0,0,1),linewidths=path_scaling))
-        lines_green = ax.add_collection(LineCollection(points_green,colors=(0,0,1),linewidths=path_scaling))
+        points_north,points_east,points_south,points_west = compute_points(M,True)
+        lines_east = ax.add_collection(LineCollection(points_east,colors=color_east,linewidths=path_scaling))
+        lines_south = ax.add_collection(LineCollection(points_south,colors=color_south,linewidths=path_scaling))
+        lines_west = ax.add_collection(LineCollection(points_west,colors=color_west,linewidths=path_scaling))
     else:
         if coloring == 'aztec gray':
-            points_1,points_2,points_3,points_4,points_5,points_6,points_7,points_8 = ext_compute_points(M,False)
-            patch_1 = ax.add_collection(PatchCollection([Polygon(points) for points in points_1]
-                                            ,facecolor=(1/9,1/9,1/9),edgecolor='k',linewidth=edge))
-            patch_2 = ax.add_collection(PatchCollection([Polygon(points) for points in points_2]
-                                            ,facecolor=(7/9,7/9,7/9),edgecolor='k',linewidth=edge))
-            patch_3 = ax.add_collection(PatchCollection([Polygon(points) for points in points_3]
-                                            ,facecolor=(1.5/9,1.5/9,1.5/9),edgecolor='k',linewidth=edge))
-            patch_4 = ax.add_collection(PatchCollection([Polygon(points) for points in points_4]
+            points_north1,points_north2,points_east1,points_east2,points_south1,points_south2,points_west1,points_west2 = ext_compute_points(M,False)
+            patch_north1 = ax.add_collection(PatchCollection([Polygon(points) for points in points_north1]
                                             ,facecolor=(6.5/9,6.5/9,6.5/9),edgecolor='k',linewidth=edge))
-            patch_5 = ax.add_collection(PatchCollection([Polygon(points) for points in points_5]
-                                            ,facecolor=(2.5/9,2.5/9,2.5/9),edgecolor='k',linewidth=edge))
-            patch_6 = ax.add_collection(PatchCollection([Polygon(points) for points in points_6]
-                                            ,facecolor=(7.5/9,7.5/9,7.5/9),edgecolor='k',linewidth=edge))
-            patch_7 = ax.add_collection(PatchCollection([Polygon(points) for points in points_7]
-                                            ,facecolor=(2/9,2/9,2/9),edgecolor='k',linewidth=edge))
-            patch_8 = ax.add_collection(PatchCollection([Polygon(points) for points in points_8]
+            patch_north2 = ax.add_collection(PatchCollection([Polygon(points) for points in points_north2]
+                                            ,facecolor=(1.5/9,1.5/9,1.5/9),edgecolor='k',linewidth=edge))
+            patch_east1 = ax.add_collection(PatchCollection([Polygon(points) for points in points_east1]
                                             ,facecolor=(6/9,6/9,6/9),edgecolor='k',linewidth=edge))
+            patch_east2 = ax.add_collection(PatchCollection([Polygon(points) for points in points_east2]
+                                            ,facecolor=(2/9,2/9,2/9),edgecolor='k',linewidth=edge))
+            patch_south1 = ax.add_collection(PatchCollection([Polygon(points) for points in points_south1]
+                                            ,facecolor=(1/9,1/9,1/9),edgecolor='k',linewidth=edge))
+            patch_south2 = ax.add_collection(PatchCollection([Polygon(points) for points in points_south2]
+                                            ,facecolor=(7/9,7/9,7/9),edgecolor='k',linewidth=edge))
+            patch_west1 = ax.add_collection(PatchCollection([Polygon(points) for points in points_west1]
+                                            ,facecolor=(2.5/9,2.5/9,2.5/9),edgecolor='k',linewidth=edge))
+            patch_west2 = ax.add_collection(PatchCollection([Polygon(points) for points in points_west2]
+                                            ,facecolor=(7.5/9,7.5/9,7.5/9),edgecolor='k',linewidth=edge))
         else:
             if coloring == 'standard':
-                color_yellow = (1,1,0)
-                color_red = (1,0,0)
-                color_blue = (0.4,0.4,1)
-                color_green = (0,1,0)
+                color_north = (1,0,0)
+                color_east = (0,1,0)
+                color_south = (1,1,0)
+                color_west = (0.4,0.4,1)
             elif coloring == 'alternative':
-                color_yellow = (190/255,190/255,140/255)
-                color_red = (70/255,60/255,75/255)
-                color_blue = (195/255,130/255,60/255)
-                color_green = (60/255,120/255,155/255)
+                color_north = (70/255,60/255,75/255)
+                color_east = (60/255,120/255,155/255)
+                color_south = (190/255,190/255,140/255)
+                color_west = (195/255,130/255,60/255)
+            elif coloring == 'gray':
+                color_north = (0.8,0.8,0.8)
+                color_east = (0.6,0.6,0.6)
+                color_south = (0.2,0.2,0.2)
+                color_west = (0.4,0.4,0.4)
             else:
-                color_yellow = (0.2,0.2,0.2)
-                color_red = (0.8,0.8,0.8)
-                color_blue = (0.4,0.4,0.4)
-                color_green = (0.6,0.6,0.6)
+                rgb_values = [tuple(float(val) / 255 for val in rgb) for rgb in re.findall(r'\((\d+),(\d+),(\d+)\)', coloring)]
+                if len(rgb_values) == 4:
+                    color_north = rgb_values[0]
+                    color_east = rgb_values[1]
+                    color_south = rgb_values[2]
+                    color_west = rgb_values[3]
+                else:
+                    print('Invalid coloring')
+                    return 'Invalid coloring'
 
-            points_yellow,points_red,points_blue,points_green = compute_points(M,False)
-            patch_yellow = ax.add_collection(PatchCollection([Polygon(points) for points in points_yellow]
-                                            ,facecolor=color_yellow,edgecolor='k',linewidth=edge))
-            patch_red = ax.add_collection(PatchCollection([Polygon(points) for points in points_red]
-                                            ,facecolor=color_red,edgecolor='k',linewidth=edge))
-            patch_blue = ax.add_collection(PatchCollection([Polygon(points) for points in points_blue]
-                                            ,facecolor=color_blue,edgecolor='k',linewidth=edge))
-            patch_green = ax.add_collection(PatchCollection([Polygon(points) for points in points_green]
-                                            ,facecolor=color_green,edgecolor='k',linewidth=edge))
+            points_north,points_east,points_south,points_west = compute_points(M,False)
+            patch_north = ax.add_collection(PatchCollection([Polygon(points) for points in points_north]
+                                            ,facecolor=color_north,edgecolor='k',linewidth=edge))
+            patch_east = ax.add_collection(PatchCollection([Polygon(points) for points in points_east]
+                                            ,facecolor=color_east,edgecolor='k',linewidth=edge))
+            patch_south = ax.add_collection(PatchCollection([Polygon(points) for points in points_south]
+                                            ,facecolor=color_south,edgecolor='k',linewidth=edge))
+            patch_west = ax.add_collection(PatchCollection([Polygon(points) for points in points_west]
+                                            ,facecolor=color_west,edgecolor='k',linewidth=edge))
 
     if rotated:
         tr = transforms.Affine2D().rotate_deg(45) + ax.transData
         if paths:
-            lines_yellow.set_transform(tr)
-            lines_blue.set_transform(tr)
-            lines_green.set_transform(tr)
-        
+            lines_east.set_transform(tr)
+            lines_south.set_transform(tr)
+            lines_west.set_transform(tr)
+
         if coloring == 'aztec gray':
-            patch_1.set_transform(tr)
-            patch_2.set_transform(tr)
-            patch_3.set_transform(tr)
-            patch_4.set_transform(tr)
-            patch_5.set_transform(tr)
-            patch_6.set_transform(tr)
-            patch_7.set_transform(tr)
-            patch_8.set_transform(tr)
+            patch_north1.set_transform(tr)
+            patch_north2.set_transform(tr)
+            patch_east1.set_transform(tr)
+            patch_east2.set_transform(tr)
+            patch_south1.set_transform(tr)
+            patch_south2.set_transform(tr)
+            patch_west1.set_transform(tr)
+            patch_west2.set_transform(tr)
         else:
-            patch_yellow.set_transform(tr)
-            patch_red.set_transform(tr)
-            patch_blue.set_transform(tr)
-            patch_green.set_transform(tr)
+            patch_north.set_transform(tr)
+            patch_east.set_transform(tr)
+            patch_south.set_transform(tr)
+            patch_west.set_transform(tr)
     
     if show_figure:
         plt.show()
@@ -110,12 +135,16 @@ def draw_dominos(M,edge,paths,dpi,rotated,coloring,show_figure):
 
 @jit()
 def type_of_domino(x,y):
-    if x%2 == 1 and y%2 == 1:
+    # 'North'
+    if x%2 == 0 and y%2 == 0:
         return 1
-    elif x%2 == 0 and y%2 == 0:
+    # 'East'
+    elif x%2 == 0 and y%2 == 1:
         return 2
-    elif x%2 == 1 and y%2 == 0:
+    # 'South'
+    elif x%2 == 1 and y%2 == 1:
         return 3
+    # 'West'
     else:
         return 4
 
@@ -123,30 +152,29 @@ def type_of_domino(x,y):
 def points_path(x,y):
     type_domino = type_of_domino(x,y)
     if type_domino == 1:
-        X1 = x + np.array([-1.,1.])
-        Y1 = y + np.array([1.,-1.])
+        X = np.array([0.,0.])
+        Y = np.array([0.,0.])
     elif type_domino == 2:
-        X1 = np.array([0.,0.])
-        Y1 = np.array([0.,0.])
+        X = x + np.array([0.,0.])
+        Y = y + np.array([1.,-1.])
     elif type_domino == 3:
-        X1 = x + np.array([-1.,1.])
-        Y1 = y + np.array([0.,0.])
+        X = x + np.array([-1.,1.])
+        Y = y + np.array([1.,-1.])
     else:
-        X1 = x + np.array([0.,0.])
-        Y1 = y + np.array([1.,-1.])
-    return X1, Y1
+        X = x + np.array([-1.,1.])
+        Y = y + np.array([0.,0.])
+    return X, Y
 
 @jit()
 def points_domino(x,y):
     type_domino = type_of_domino(x,y)
-    s2 = 2
-    if type_domino == 1 or type_domino == 2:
-        X2 = x + np.array([-0.5-0.5*s2,-0.5,0.5+0.5*s2,0.5])
-        Y2 = y + np.array([0.5,0.5+0.5*s2,-0.5,-0.5-0.5*s2])
+    if type_domino == 1 or type_domino == 3:
+        X = x + np.array([-1.5,-0.5,1.5,0.5])
+        Y = y + np.array([0.5,1.5,-0.5,-1.5])
     else:
-        X2 = x + np.array([-0.5-0.5*s2,0.5,0.5+0.5*s2,-0.5])
-        Y2 = y + np.array([-0.5,0.5+0.5*s2,0.5,-0.5-0.5*s2])
-    return X2, Y2
+        X = x + np.array([-1.5,0.5,1.5,-0.5])
+        Y = y + np.array([-0.5,1.5,0.5,-1.5])
+    return X, Y
 
 @jit("(Array(int64, 2, 'C', False, aligned=True), boolean)")
 def compute_points(M,paths):
@@ -163,6 +191,7 @@ def compute_points(M,paths):
                     X,Y = points_path(x,y)
                 else:
                     X,Y = points_domino(x,y)
+
                 type_dom = type_of_domino(x,y)
                 if type_dom == 1:
                     P1 += [list(zip(X,Y))]
@@ -177,14 +206,18 @@ def compute_points(M,paths):
 @jit()
 def ext_type_of_domino(x,y):
     type_domino = type_of_domino(x,y)
+    # 'North 1/2'
     if type_domino == 1:
         return 1 + int((x+y)%4 == 0)
+    # 'East 1/2'
     elif type_domino == 2:
-        return 3 + int((x+y)%4 == 2)
+        return 3 + int((x-y)%4 == 1)
+    # 'South 1/2'
     elif type_domino == 3:
-        return 5 + int((x-y)%4 == 1)
-    elif type_domino == 4:
-        return 7 + int((x-y)%4 == 3)
+        return 5 + int((x+y)%4 == 0)
+    # 'West 1/2'
+    else:
+        return 7 + int((x-y)%4 == 1)
 
 @jit("(Array(int64, 2, 'C', False, aligned=True), boolean)")
 def ext_compute_points(M,paths):
@@ -205,6 +238,7 @@ def ext_compute_points(M,paths):
                     X,Y = points_path(x,y)
                 else:
                     X,Y = points_domino(x,y)
+
                 ext_type_dom = ext_type_of_domino(x,y)
                 if ext_type_dom == 1:
                     P1 += [list(zip(X,Y))]
