@@ -19,7 +19,7 @@ the Python package. Some parts of the [`Help file`](https://sites.google.com/vie
 more complete description, the reader should consult the [`Help file`](https://sites.google.com/view/cchar/random-tilings); please keep in mind that only some
 features are available in the Python package.
 
-Some examples using the routines from the Python package can be found in the Jupyter notebook `Examples - How to use` or in the `How to use` section below.
+Some examples using the routines from the Python package can be found in the Jupyter notebook [`Examples - How to use`](https://github.com/MaxvanHorssen/random-tilings/blob/main/Examples%20-%20How%20to%20use.ipynb) or in the `How to use` section below.
 
 **The Power of Numba**      
 The creation of these random tilings is numerically expensive. In order to drastically improve the performance, this package makes heavy use of the `Numba` compiler `jit`.
