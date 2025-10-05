@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import re
 
-def draw_lozenges(n,M,a,b,c,edge,paths,dpi,coloring,show_figure):
+def draw_lozenges(n,M,a,b,c,edge,paths,coloring,dpi,show_figure):
     A = int(np.round(a*n))
     B = int(np.round(b*n))
     C = int(np.round(c*n))
@@ -13,11 +13,11 @@ def draw_lozenges(n,M,a,b,c,edge,paths,dpi,coloring,show_figure):
 
     margin = 1
     fig, ax = plt.subplots(dpi=dpi)
-    ax.set_xlim(-margin,2*B+2*C+margin)
+    ax.set_xlim(-margin,2*(B+C)+margin)
     ax.set_ylim(-B-margin,2*A+C+margin)
     ax.set_aspect('equal')
     ax.axis('off')
-    ax.set_aspect(1/(np.sqrt(3)/2), adjustable='box')
+    ax.set_aspect(2/(3**0.5), adjustable='box') # here
 
     if paths:
         if coloring == 'standard':
@@ -43,6 +43,11 @@ def draw_lozenges(n,M,a,b,c,edge,paths,dpi,coloring,show_figure):
         points_up,points_down,points_free = compute_points(M,A,B,C,True)
         ax.add_collection(LineCollection(points_up,colors=color_up,linewidths=path_scaling))
         ax.add_collection(LineCollection(points_down,colors=color_down,linewidths=path_scaling))
+
+        if edge == 0:
+            ax.add_collection(LineCollection([[(0,0),(0,2*A)],[(0,2*A),(2*C,2*A+C)],[(2*C,2*A+C),(2*(B+C),2*A-B+C)],
+                                              [(2*(B+C),2*A-B+C),(2*(B+C),-B+C)],[(2*(B+C),-B+C),(2*B,-B)],[(2*B,-B),(0,0)]],
+                                              colors=(0,0,0),linewidths=0.5*path_scaling))
     else:
         if coloring == 'standard':
             color_up = (1,0,0)
@@ -57,7 +62,7 @@ def draw_lozenges(n,M,a,b,c,edge,paths,dpi,coloring,show_figure):
             color_down = (0.5,0.5,0.5)
             color_free = (0.75,0.75,0.75)
         else:
-            rgb_values = [tuple(float(val) / 255 for val in rgb) for rgb in re.findall(r'\((\d+),(\d+),(\d+)\)', coloring)]
+            rgb_values = [tuple(float(val)/255 for val in rgb) for rgb in re.findall(r'\((\d+),(\d+),(\d+)\)', coloring)]
             if len(rgb_values) == 3:
                 color_up = rgb_values[0]
                 color_down = rgb_values[1]
@@ -91,7 +96,7 @@ def type_of_lozenge(x,y):
         return 3
 
 @jit()
-def isinhexagon(x,y,A,B,C):
+def in_hexagon(x,y,A,B,C):
     if x <= 2*min(B,C):
         return y >= 1 and y <= 2*A+x-1
     elif x >= 2*C+1 and x <= 2*B:
@@ -108,10 +113,10 @@ def points_path(x,y):
     type_loz = type_of_lozenge(x,y)
     if type_loz == 1:
         X = x+np.array([-1,1])
-        Y = y+np.array([-1,1])-np.array([(x-1)//2,(x+1)//2])
+        Y = y+np.array([-1-(x-1)//2,1-(x+1)//2])
     elif type_loz == 2:
         X = x+np.array([-1,1])
-        Y = y+np.array([0,0])-np.array([(x-1)//2,(x+1)//2])
+        Y = y+np.array([-(x-1)//2,-(x+1)//2])
     else:
         X = np.array([0,0])
         Y = np.array([0,0])
@@ -122,13 +127,13 @@ def points_lozenge(x,y):
     type_loz = type_of_lozenge(x,y)
     if type_loz == 1:
         X = x+np.array([-1,-1,1,1])
-        Y = y+np.array([-2,0,2,0])-np.array([(x-1)//2,(x-1)//2,(x+1)//2,(x+1)//2])
+        Y = y+np.array([-2-(x-1)//2,-(x-1)//2,2-(x+1)//2,-(x+1)//2])
     elif type_loz == 2:
         X = x+np.array([-1,-1,1,1])
-        Y = y+np.array([-1,1,1,-1])-np.array([(x-1)//2,(x-1)//2,(x+1)//2,(x+1)//2])
+        Y = y+np.array([-1-(x-1)//2,1-(x-1)//2,1-(x+1)//2,-1-(x+1)//2])
     else:
         X = x+np.array([-2,0,2,0])
-        Y = y+np.array([-1,1,1,-1])-np.array([(x-2)//2,x//2,(x+2)//2,x//2])
+        Y = y+np.array([-1-(x-2)//2,1-x//2,1-(x+2)//2,-1-x//2])
     return X, Y
 
 @jit("(Array(int64, 2, 'C', False, aligned=True), int64, int64, int64, boolean)")
@@ -139,7 +144,7 @@ def compute_points(M,A,B,C,paths):
     P3 = [[(0,0),(0,0)]]
     for x in range(1,N+1):
         for y in range(1,N+1):
-            if isinhexagon(x,y,A,B,C) and M[N-y,x-1] == 1:
+            if in_hexagon(x,y,A,B,C) and M[N-y,x-1] == 1:
                 if paths:
                     X,Y = points_path(x,y)
                 else:

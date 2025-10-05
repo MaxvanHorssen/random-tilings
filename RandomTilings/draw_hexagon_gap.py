@@ -5,7 +5,7 @@ from RandomTilings.shuffling import shuffling
 from RandomTilings.draw_lozenges import draw_lozenges
 import numpy as np
 
-def draw_hexagon_gap(n,w,gap,a=1,b=1,c=1,edge=0,paths=False,dpi=200,coloring='standard',show_figure=True):
+def draw_hexagon_gap(n,w,gap,a=1,b=1,c=1,edge=0,paths=False,coloring='standard',dpi=200,show_figure=True):
     w = w.astype(float)
     A = int(np.round(a*n))
     B = int(np.round(b*n))
@@ -35,6 +35,5 @@ def draw_hexagon_gap(n,w,gap,a=1,b=1,c=1,edge=0,paths=False,dpi=200,coloring='st
     logPn = logZnNum - logZnDen
 
     M = shuffling(C)
-    fig = draw_lozenges(n,M,a,b,c,edge,paths,dpi,coloring,show_figure)
-
+    fig = draw_lozenges(n,M,a,b,c,edge,paths,coloring,dpi,show_figure)
     return [logPn, logZnNum, logZnDen], fig

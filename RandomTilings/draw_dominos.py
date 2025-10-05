@@ -6,19 +6,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 import re
 
-def draw_dominos(M,edge,paths,dpi,rotated,coloring,show_figure):
+def draw_dominos(M,edge,paths,rotated,coloring,dpi,show_figure):
     N = M.shape[0]
     path_scaling = 20/N
 
-    margin = 1    
+    margin = 1
     fig, ax = plt.subplots(dpi=dpi)
-
     if rotated:
-        ax.set_xlim(-3*N//4-margin+1,3*N//4+margin)
-        ax.set_ylim(-margin,3*N//2+margin)
+        ax.set_xlim(-0.5*2**0.5*N-margin,0.5*2**0.5*N+margin)
+        ax.set_ylim(0.5*2**0.5-margin,2**0.5*(N+0.5)+margin)
     else:
-        ax.set_xlim(-margin,N+1+margin)
-        ax.set_ylim(-margin,N+1+margin)
+        ax.set_xlim(-0.5-margin,N+1.5+margin)
+        ax.set_ylim(-0.5-margin,N+1.5+margin)
     ax.set_aspect('equal')
     ax.axis('off')
 
@@ -51,6 +50,17 @@ def draw_dominos(M,edge,paths,dpi,rotated,coloring,show_figure):
         lines_east = ax.add_collection(LineCollection(points_east,colors=color_east,linewidths=path_scaling))
         lines_south = ax.add_collection(LineCollection(points_south,colors=color_south,linewidths=path_scaling))
         lines_west = ax.add_collection(LineCollection(points_west,colors=color_west,linewidths=path_scaling))
+
+        if edge == 0:
+            border = ax.add_collection(LineCollection([[(x+0.5,0.5),(x+1.5,-0.5)] for x in range(0,N,2)]
+                                                     +[[(x+1.5,-0.5),(x+2.5,0.5)] for x in range(0,N,2)]
+                                                     +[[(-0.5,y+1.5),(0.5,y+2.5)] for y in range(0,N,2)]
+                                                     +[[(0.5,y+0.5),(-0.5,y+1.5)] for y in range(0,N,2)]
+                                                     +[[(x+0.5,N+0.5),(x+1.5,N+1.5)] for x in range(0,N,2)]
+                                                     +[[(x+1.5,N+1.5),(x+2.5,N+0.5)] for x in range(0,N,2)]
+                                                     +[[(N+1.5,y+1.5),(N+0.5,y+2.5)] for y in range(0,N,2)]
+                                                     +[[(N+0.5,y+0.5),(N+1.5,y+1.5)] for y in range(0,N,2)],
+                                                     colors=(0,0,0),linewidths=0.5*path_scaling))
     else:
         if coloring == 'aztec gray':
             points_north1,points_north2,points_east1,points_east2,points_south1,points_south2,points_west1,points_west2 = ext_compute_points(M,False)
@@ -87,7 +97,7 @@ def draw_dominos(M,edge,paths,dpi,rotated,coloring,show_figure):
                 color_south = (0.2,0.2,0.2)
                 color_west = (0.4,0.4,0.4)
             else:
-                rgb_values = [tuple(float(val) / 255 for val in rgb) for rgb in re.findall(r'\((\d+),(\d+),(\d+)\)', coloring)]
+                rgb_values = [tuple(float(val)/255 for val in rgb) for rgb in re.findall(r'\((\d+),(\d+),(\d+)\)', coloring)]
                 if len(rgb_values) == 4:
                     color_north = rgb_values[0]
                     color_east = rgb_values[1]
@@ -113,6 +123,8 @@ def draw_dominos(M,edge,paths,dpi,rotated,coloring,show_figure):
             lines_east.set_transform(tr)
             lines_south.set_transform(tr)
             lines_west.set_transform(tr)
+            if edge == 0:
+                border.set_transform(tr)
 
         if coloring == 'aztec gray':
             patch_north1.set_transform(tr)
