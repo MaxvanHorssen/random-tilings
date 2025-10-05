@@ -1,8 +1,8 @@
 Random tilings
 ==============
 
-This project provides the Python package `Randomtilings`, which makes it possible to generate random tilings of the Aztec diamond and the hexagon for doubly periodic weighting s.
-It is a translation of the Matlab program `Matlabtilings` by Christophe Charlier, which is based on the shuffling algorithm as described in [arXiv:0111034](https://arxiv.org/abs/math/0111034).
+This project provides the Python package `RandomTilings`, which makes it possible to generate random tilings of the Aztec diamond and the hexagon for doubly periodic weighting s.
+It is a translation of the Matlab program `MatlabTilings` by Christophe Charlier, which is based on the shuffling algorithm as described in [arXiv:0111034](https://arxiv.org/abs/math/0111034).
 The original Matlab implementation can be found on his [homepage](https://sites.google.com/view/cchar/home). We are grateful to Christophe Charlier for
 allowing us to make this package publicly available.
 
@@ -12,10 +12,10 @@ allowing us to make this package publicly available.
 </p>
 
 # Important Notes
-A documentation for the the routines provided by `Randomtilings` can be found in the pdf `Documentation for Randomtilings`. 
-In the current version, not all options from `Matlabtilings` have been implemented in the Python
+A documentation for the the routines provided by `RandomTilings` can be found in the pdf `Documentation for RandomTilings`. 
+In the current version, not all options from `MatlabTilings` have been implemented in the Python
 package. Therefore, `Documentation for RandomTilings` mainly discusses the necessary changes important for
-the Python package. Some parts of the [`Help file`](https://sites.google.com/view/cchar/random-tilings)  for `Matlabtilings` are copied for context. For a
+the Python package. Some parts of the [`Help file`](https://sites.google.com/view/cchar/random-tilings)  for `MatlabTilings` are copied for context. For a
 more complete description, the reader should consult the [`Help file`](https://sites.google.com/view/cchar/random-tilings); please keep in mind that only some
 features are available in the Python package.
 
@@ -29,12 +29,12 @@ Therefore, installation of `Numba` is required to be able to run the package. No
 We would like to express our sincere gratitude to Christophe Charlier for providing the original Matlab implementation and for giving us permission to release this Python adaptation of his program.
 
 # How to get started
-The package `Randomtilings` makes heavy use of:
+The package `RandomTilings` makes heavy use of:
  - NumPy
  - Matplotlib
  - Numba
 
-Therefore, make sure that these libraries are installed beforehand. Once the installation is successful, you only have to copy the folder `Randomtilings` in the same folder as your Python script or Jupyter notebook, and you can import the routines by simply calling:
+Therefore, make sure that these libraries are installed beforehand. Once the installation is successful, you only have to copy the folder `RandomTilings` in the same folder as your Python script or Jupyter notebook, and you can import the routines by simply calling:
 ```python
  from RandomTilings import *
 ```
