@@ -23,7 +23,7 @@ Some examples using the routines from the Python package can be found in the Jup
 
 **The Power of Numba**      
 The creation of these random tilings is numerically expensive. In order to drastically improve the performance, this package makes heavy use of the `Numba` compiler `jit`.
-Therefore, installation of `Numba` is required to be able to run the package. Note that importing `Randomtilings` might take some time, as all subroutines have to be compiled.
+Therefore, installation of `Numba` is required to be able to run the package. Note that importing `RandomTilings` might take some time, as all subroutines have to be compiled.
 
 # Acknowledgments
 We would like to express our sincere gratitude to Christophe Charlier for providing the original Matlab implementation and for giving us permission to release this Python adaptation of his program.
