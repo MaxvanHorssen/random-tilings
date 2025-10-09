@@ -31,5 +31,4 @@ def log_partition_function_hexagon_gap(n,w,gap,a=1,b=1,c=1):
     C = algorithm_reduction_weight(W)
     logZnNum = log_partition_function(C)
     logPn = logZnNum - logZnDen
-    
     return [logPn, logZnNum, logZnDen]

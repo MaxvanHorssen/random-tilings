@@ -34,5 +34,4 @@ def log_partition_function_aztec_gap(n,w,gap):
     C = algorithm_reduction_weight(W)
     logZnNum = log_partition_function(C)
     logPn = logZnNum - logZnDen
-    
     return [logPn, logZnNum, logZnDen]
