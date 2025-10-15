@@ -7,6 +7,7 @@ import numpy as np
 
 def draw_hexagon_gap(n,w,gap,a=1,b=1,c=1,edge=0,paths=False,coloring='standard',dpi=200,show_figure=True):
     w = w.astype(float)
+    edge = str(edge)
     A = int(np.round(a*n))
     B = int(np.round(b*n))
     C = int(np.round(c*n))

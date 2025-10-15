@@ -17,7 +17,16 @@ def draw_lozenges(n,M,a,b,c,edge,paths,coloring,dpi,show_figure):
     ax.set_ylim(-B-margin,2*A+C+margin)
     ax.set_aspect('equal')
     ax.axis('off')
-    ax.set_aspect(2/(3**0.5), adjustable='box') # here
+    ax.set_aspect(2/(3**0.5), adjustable='box')
+
+    if edge == 'egde scaling' or edge == 'colored edge scaling':
+        edge_scaling = 10/max(A,B,C)
+    else:
+        if re.fullmatch(r'[+-]?(\d+(\.\d*)?|\.\d+)', edge):
+            edge_scaling = float(edge)
+        else:
+            print('Invalid edge scaling')
+            return 'Invalid edge scaling'
 
     if paths:
         if coloring == 'standard':
@@ -34,17 +43,17 @@ def draw_lozenges(n,M,a,b,c,edge,paths,coloring,dpi,show_figure):
         
         points_up,points_down,points_free = compute_points(M,A,B,C,False)
         ax.add_collection(PatchCollection([Polygon(point) for point in points_up]
-                                        ,facecolor='none',edgecolor='k',linewidth=edge))
+                                        ,facecolor='none',edgecolor='k',linewidth=edge_scaling))
         ax.add_collection(PatchCollection([Polygon(point) for point in points_down]
-                                        ,facecolor='none',edgecolor='k',linewidth=edge))
+                                        ,facecolor='none',edgecolor='k',linewidth=edge_scaling))
         ax.add_collection(PatchCollection([Polygon(point) for point in points_free]
-                                        ,facecolor='none',edgecolor='k',linewidth=edge))
+                                        ,facecolor='none',edgecolor='k',linewidth=edge_scaling))
 
         points_up,points_down,points_free = compute_points(M,A,B,C,True)
         ax.add_collection(LineCollection(points_up,colors=color_up,linewidths=path_scaling))
         ax.add_collection(LineCollection(points_down,colors=color_down,linewidths=path_scaling))
 
-        if edge == 0:
+        if edge_scaling == 0:
             ax.add_collection(LineCollection([[(0,0),(0,2*A)],[(0,2*A),(2*C,2*A+C)],[(2*C,2*A+C),(2*(B+C),2*A-B+C)],
                                               [(2*(B+C),2*A-B+C),(2*(B+C),-B+C)],[(2*(B+C),-B+C),(2*B,-B)],[(2*B,-B),(0,0)]],
                                               colors=(0,0,0),linewidths=0.5*path_scaling))
@@ -72,12 +81,20 @@ def draw_lozenges(n,M,a,b,c,edge,paths,coloring,dpi,show_figure):
                 return 'Invalid coloring'
 
         points_up,points_down,points_free = compute_points(M,A,B,C,False)
-        ax.add_collection(PatchCollection([Polygon(point) for point in points_up]
-                                        ,facecolor=color_up,edgecolor='k',linewidth=edge))
-        ax.add_collection(PatchCollection([Polygon(point) for point in points_down]
-                                        ,facecolor=color_down,edgecolor='k',linewidth=edge))
-        ax.add_collection(PatchCollection([Polygon(point) for point in points_free]
-                                        ,facecolor=color_free,edgecolor='k',linewidth=edge))
+        if edge == 'colored edge scaling':
+            ax.add_collection(PatchCollection([Polygon(point) for point in points_up]
+                                            ,facecolor=color_up,edgecolor=color_up,linewidth=edge_scaling))
+            ax.add_collection(PatchCollection([Polygon(point) for point in points_down]
+                                            ,facecolor=color_down,edgecolor=color_down,linewidth=edge_scaling))
+            ax.add_collection(PatchCollection([Polygon(point) for point in points_free]
+                                            ,facecolor=color_free,edgecolor=color_free,linewidth=edge_scaling))
+        else:
+            ax.add_collection(PatchCollection([Polygon(point) for point in points_up]
+                                            ,facecolor=color_up,edgecolor='k',linewidth=edge_scaling))
+            ax.add_collection(PatchCollection([Polygon(point) for point in points_down]
+                                            ,facecolor=color_down,edgecolor='k',linewidth=edge_scaling))
+            ax.add_collection(PatchCollection([Polygon(point) for point in points_free]
+                                            ,facecolor=color_free,edgecolor='k',linewidth=edge_scaling))
 
     if show_figure:
         plt.show()

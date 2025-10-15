@@ -9,6 +9,7 @@ def draw_aztec_gap(n,w,gap,edge=0,paths=False,rotated=True,coloring='standard',d
     end = N
 
     w = w.astype(float)
+    edge = str(edge)
     W = weight_aztec(n,w)
     C = algorithm_reduction_weight(W)
     logZnDen = log_partition_function(C)
