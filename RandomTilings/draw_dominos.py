@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import re
 
-def draw_dominos(M,edge,paths,rotated,coloring,dpi,show_figure):
+def draw_dominos(M,gap,edge,paths,rotated,coloring,show_gap,dpi,show_figure):
     N = M.shape[0]
     path_scaling = 20/N
 
@@ -20,6 +20,15 @@ def draw_dominos(M,edge,paths,rotated,coloring,dpi,show_figure):
         ax.set_ylim(-0.5-margin,N+1.5+margin)
     ax.set_aspect('equal')
     ax.axis('off')
+
+    if edge == 'egde scaling':
+        edge_scaling = 20/N
+    else:
+        if re.fullmatch(r'[+-]?(\d+(\.\d*)?|\.\d+)', edge):
+            edge_scaling = float(edge)
+        else:
+            print('Invalid edge scaling')
+            return 'Invalid edge scaling'
 
     if paths:
         if coloring == 'standard':
@@ -38,20 +47,30 @@ def draw_dominos(M,edge,paths,rotated,coloring,dpi,show_figure):
 
         points_north,points_east,points_south,points_west = compute_points(M,False)
         patch_north = ax.add_collection(PatchCollection([Polygon(points) for points in points_north]
-                                        ,facecolor='none',edgecolor='k',linewidth=edge))
+                                        ,facecolor='none',edgecolor='k',linewidth=edge_scaling))
         patch_east = ax.add_collection(PatchCollection([Polygon(points) for points in points_east]
-                                        ,facecolor='none',edgecolor='k',linewidth=edge))
+                                        ,facecolor='none',edgecolor='k',linewidth=edge_scaling))
         patch_south = ax.add_collection(PatchCollection([Polygon(points) for points in points_south]
-                                        ,facecolor='none',edgecolor='k',linewidth=edge))
+                                        ,facecolor='none',edgecolor='k',linewidth=edge_scaling))
         patch_west = ax.add_collection(PatchCollection([Polygon(points) for points in points_west]
-                                        ,facecolor='none',edgecolor='k',linewidth=edge))
+                                        ,facecolor='none',edgecolor='k',linewidth=edge_scaling))
 
         points_north,points_east,points_south,points_west = compute_points(M,True)
         lines_east = ax.add_collection(LineCollection(points_east,colors=color_east,linewidths=path_scaling))
         lines_south = ax.add_collection(LineCollection(points_south,colors=color_south,linewidths=path_scaling))
         lines_west = ax.add_collection(LineCollection(points_west,colors=color_west,linewidths=path_scaling))
 
-        if edge == 0:
+        if show_gap:
+            points_gap_lines = []
+            size_gap = gap.shape[0]
+            for i1 in range(size_gap):
+                x = gap[i1][0]
+                y1 = N-x+2*gap[i1][1]-1
+                y2 = N-x+2*gap[i1][2]
+                points_gap_lines.append([[x,y1],[x,y2]])
+            gap_lines = ax.add_collection(LineCollection(points_gap_lines, colors='r', linewidths=path_scaling))
+
+        if edge_scaling == 0:
             border = ax.add_collection(LineCollection([[(x+0.5,0.5),(x+1.5,-0.5)] for x in range(0,N,2)]
                                                      +[[(x+1.5,-0.5),(x+2.5,0.5)] for x in range(0,N,2)]
                                                      +[[(-0.5,y+1.5),(0.5,y+2.5)] for y in range(0,N,2)]
@@ -109,13 +128,13 @@ def draw_dominos(M,edge,paths,rotated,coloring,dpi,show_figure):
 
             points_north,points_east,points_south,points_west = compute_points(M,False)
             patch_north = ax.add_collection(PatchCollection([Polygon(points) for points in points_north]
-                                            ,facecolor=color_north,edgecolor='k',linewidth=edge))
+                                            ,facecolor=color_north,edgecolor='k',linewidth=edge_scaling))
             patch_east = ax.add_collection(PatchCollection([Polygon(points) for points in points_east]
-                                            ,facecolor=color_east,edgecolor='k',linewidth=edge))
+                                            ,facecolor=color_east,edgecolor='k',linewidth=edge_scaling))
             patch_south = ax.add_collection(PatchCollection([Polygon(points) for points in points_south]
-                                            ,facecolor=color_south,edgecolor='k',linewidth=edge))
+                                            ,facecolor=color_south,edgecolor='k',linewidth=edge_scaling))
             patch_west = ax.add_collection(PatchCollection([Polygon(points) for points in points_west]
-                                            ,facecolor=color_west,edgecolor='k',linewidth=edge))
+                                            ,facecolor=color_west,edgecolor='k',linewidth=edge_scaling))
 
     if rotated:
         tr = transforms.Affine2D().rotate_deg(45) + ax.transData
@@ -123,6 +142,8 @@ def draw_dominos(M,edge,paths,rotated,coloring,dpi,show_figure):
             lines_east.set_transform(tr)
             lines_south.set_transform(tr)
             lines_west.set_transform(tr)
+            if show_gap:
+                gap_lines.set_transform(tr)
             if edge == 0:
                 border.set_transform(tr)
 
