@@ -9,5 +9,5 @@ def draw_aztec(n,w,edge=0,paths=False,rotated=True,coloring='standard',dpi=200,s
     W = weight_aztec(n,w)
     C = algorithm_reduction_weight(W)
     M = shuffling(C)
-    fig = draw_dominos(M,edge,paths,rotated,coloring,dpi,show_figure)
+    fig = draw_dominos(M,False,edge,paths,rotated,coloring,False,dpi,show_figure)
     return fig

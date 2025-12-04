@@ -84,21 +84,21 @@ def draw_dominos(M,gap,edge,paths,rotated,coloring,show_gap,dpi,show_figure):
         if coloring == 'aztec gray':
             points_north1,points_north2,points_east1,points_east2,points_south1,points_south2,points_west1,points_west2 = ext_compute_points(M,False)
             patch_north1 = ax.add_collection(PatchCollection([Polygon(points) for points in points_north1]
-                                            ,facecolor=(6.5/9,6.5/9,6.5/9),edgecolor='k',linewidth=edge))
+                                            ,facecolor=(6.5/9,6.5/9,6.5/9),edgecolor='k',linewidth=edge_scaling))
             patch_north2 = ax.add_collection(PatchCollection([Polygon(points) for points in points_north2]
-                                            ,facecolor=(1.5/9,1.5/9,1.5/9),edgecolor='k',linewidth=edge))
+                                            ,facecolor=(1.5/9,1.5/9,1.5/9),edgecolor='k',linewidth=edge_scaling))
             patch_east1 = ax.add_collection(PatchCollection([Polygon(points) for points in points_east1]
-                                            ,facecolor=(6/9,6/9,6/9),edgecolor='k',linewidth=edge))
+                                            ,facecolor=(6/9,6/9,6/9),edgecolor='k',linewidth=edge_scaling))
             patch_east2 = ax.add_collection(PatchCollection([Polygon(points) for points in points_east2]
-                                            ,facecolor=(2/9,2/9,2/9),edgecolor='k',linewidth=edge))
+                                            ,facecolor=(2/9,2/9,2/9),edgecolor='k',linewidth=edge_scaling))
             patch_south1 = ax.add_collection(PatchCollection([Polygon(points) for points in points_south1]
-                                            ,facecolor=(1/9,1/9,1/9),edgecolor='k',linewidth=edge))
+                                            ,facecolor=(1/9,1/9,1/9),edgecolor='k',linewidth=edge_scaling))
             patch_south2 = ax.add_collection(PatchCollection([Polygon(points) for points in points_south2]
-                                            ,facecolor=(7/9,7/9,7/9),edgecolor='k',linewidth=edge))
+                                            ,facecolor=(7/9,7/9,7/9),edgecolor='k',linewidth=edge_scaling))
             patch_west1 = ax.add_collection(PatchCollection([Polygon(points) for points in points_west1]
-                                            ,facecolor=(2.5/9,2.5/9,2.5/9),edgecolor='k',linewidth=edge))
+                                            ,facecolor=(2.5/9,2.5/9,2.5/9),edgecolor='k',linewidth=edge_scaling))
             patch_west2 = ax.add_collection(PatchCollection([Polygon(points) for points in points_west2]
-                                            ,facecolor=(7.5/9,7.5/9,7.5/9),edgecolor='k',linewidth=edge))
+                                            ,facecolor=(7.5/9,7.5/9,7.5/9),edgecolor='k',linewidth=edge_scaling))
         else:
             if coloring == 'standard':
                 color_north = (1,0,0)
@@ -144,7 +144,7 @@ def draw_dominos(M,gap,edge,paths,rotated,coloring,show_gap,dpi,show_figure):
             lines_west.set_transform(tr)
             if show_gap:
                 gap_lines.set_transform(tr)
-            if edge == 0:
+            if edge_scaling == 0:
                 border.set_transform(tr)
 
         if coloring == 'aztec gray':

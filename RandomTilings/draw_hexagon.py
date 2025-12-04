@@ -9,5 +9,5 @@ def draw_hexagon(n,w,a=1,b=1,c=1,skewed_grid=False,edge=0,paths=False,coloring='
     W = weight_hexagon(n,w,a,b,c)
     C = algorithm_reduction_weight(W)
     M = shuffling(C)
-    fig = draw_lozenges(n,M,a,b,c,skewed_grid,edge,paths,coloring,dpi,show_figure)
+    fig = draw_lozenges(n,M,False,a,b,c,skewed_grid,edge,paths,coloring,False,dpi,show_figure)
     return fig
