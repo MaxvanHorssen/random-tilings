@@ -68,7 +68,7 @@ The inputs correspond to the following:
                    'alternative' (taken from [arXiv:2402.08798](https://arxiv.org/abs/2402.08798)), and 'gray'.
  - `dpi`         : integer, defining the resolution used for the resulting figure.
                    Note, while using Jupyter notebook it will also increase the plot.
- - `show_figure` : If true, the plot will be shown atomatically.
+ - `show_figure` : If true, the plot will be shown automatically.
 
 Output:
  - `fig`         : `matplotlib.pyplot.figure` containing the plot. 
