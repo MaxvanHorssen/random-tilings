@@ -4,7 +4,7 @@ from RandomTilings.log_partition_function import log_partition_function
 from RandomTilings.shuffling import shuffling
 from RandomTilings.draw_dominos import draw_dominos
 
-def draw_aztec_gap(n,w,gap,edge=0,paths=False,rotated=True,coloring='standard',show_gap=False,dpi=200,show_figure=True):
+def draw_aztec_gap(n,w,gap,edge=0,paths=False,dots=False,rotated=True,coloring='standard',show_gap=False,dpi=200,show_figure=True):
     N = 2*n
     end = N
 
@@ -39,5 +39,5 @@ def draw_aztec_gap(n,w,gap,edge=0,paths=False,rotated=True,coloring='standard',s
     logPn = logZnNum - logZnDen
     
     M = shuffling(C)
-    fig = draw_dominos(M,gap,edge,paths,rotated,coloring,show_gap,dpi,show_figure)
+    fig = draw_dominos(M,gap,edge,paths,dots,rotated,coloring,show_gap,dpi,show_figure)
     return [logPn, logZnNum, logZnDen], fig

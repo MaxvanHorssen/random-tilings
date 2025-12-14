@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import re
 
-def draw_lozenges(n,M,gap,a,b,c,skewed_grid,edge,paths,coloring,show_gap,dpi,show_figure):
+def draw_lozenges(n,M,gap,a,b,c,skewed_grid,edge,paths,dots,coloring,show_gap,dpi,show_figure):
     A = int(np.round(a*n))
     B = int(np.round(b*n))
     C = int(np.round(c*n))
@@ -44,7 +44,7 @@ def draw_lozenges(n,M,gap,a,b,c,skewed_grid,edge,paths,coloring,show_gap,dpi,sho
             else:
                 print('Invalid coloring')
                 return 'Invalid coloring'
-        
+
         points_up,points_down,points_free = compute_points(M,A,B,C,skewed_grid,False)
         ax.add_collection(PatchCollection([Polygon(point) for point in points_up]
                                         ,facecolor='none',edgecolor='k',linewidth=edge_scaling))
@@ -56,7 +56,12 @@ def draw_lozenges(n,M,gap,a,b,c,skewed_grid,edge,paths,coloring,show_gap,dpi,sho
         points_up,points_down,points_free = compute_points(M,A,B,C,skewed_grid,True)
         ax.add_collection(LineCollection(points_up,colors=color_up,linewidths=path_scaling))
         ax.add_collection(LineCollection(points_down,colors=color_down,linewidths=path_scaling))
-        
+
+        if dots:
+            points_up_dots,points_down_dots = compute_points_dots(M,A,B,C,skewed_grid)
+            ax.scatter(points_up_dots[:,0],points_up_dots[:,1],color=color_up,linewidth=path_scaling/2)
+            ax.scatter(points_down_dots[:,0],points_down_dots[:,1],color=color_up,linewidth=path_scaling/2)
+
         if show_gap:
             points_gap_lines = []
             size_gap = gap.shape[0]
@@ -212,3 +217,26 @@ def compute_points(M,A,B,C,skewed_grid,paths):
                 else:
                     P3 += [list(zip(X,Y))]
     return P1[1:],P2[1:],P3[1:]
+
+@jit("(Array(int64, 2, 'C', False, aligned=True), int64, int64, int64, boolean)")
+def compute_points_dots(M,A,B,C,skewed_grid):
+    N = M.shape[0]
+    P1 = [[0,0]]
+    P2 = [[0,0]]
+    for x in range(1,N+1):
+        for y in range(1,N+1):
+            if in_hexagon(x,y,A,B,C) and M[N-y,x-1] == 1:
+                X,Y = points_path(x,y,skewed_grid)
+                type_loz = type_of_lozenge(x,y)
+                if type_loz == 1:
+                    P1.append([X[0],Y[0]])
+                elif type_loz == 2:
+                    P2.append([X[0],Y[0]])
+    for y in range(1,N+1):
+        if in_hexagon(2*(B+C)-1,y,A,B,C) and y%2 == 0:
+            if skewed_grid:
+                Y = y+1
+            else:
+                Y = y+1-(B+C)
+            P1.append([2*(B+C),Y])
+    return np.array(P1[1:]),np.array(P2[1:])

@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import re
 
-def draw_dominos(M,gap,edge,paths,rotated,coloring,show_gap,dpi,show_figure):
+def draw_dominos(M,gap,edge,paths,dots,rotated,coloring,show_gap,dpi,show_figure):
     N = M.shape[0]
     path_scaling = 20/N
 
@@ -59,6 +59,15 @@ def draw_dominos(M,gap,edge,paths,rotated,coloring,show_gap,dpi,show_figure):
         lines_east = ax.add_collection(LineCollection(points_east,colors=color_east,linewidths=path_scaling))
         lines_south = ax.add_collection(LineCollection(points_south,colors=color_south,linewidths=path_scaling))
         lines_west = ax.add_collection(LineCollection(points_west,colors=color_west,linewidths=path_scaling))
+
+        if dots:
+            points_south_dots,points_west_dots = compute_points_dots(M)
+            if rotated:
+                rot = (2**0.5/2)*np.array([[1,-1],[1,1]])
+                points_south_dots = points_south_dots @ rot.T
+                points_west_dots = points_west_dots @ rot.T
+            ax.scatter(points_south_dots[:,0],points_south_dots[:,1],color=color_south,linewidth=path_scaling/2)
+            ax.scatter(points_west_dots[:,0],points_west_dots[:,1],color=color_west,linewidth=path_scaling/2)
 
         if show_gap:
             points_gap_lines = []
@@ -235,6 +244,26 @@ def compute_points(M,paths):
                 else:
                     P4 += [list(zip(X,Y))]
     return P1[1:],P2[1:],P3[1:],P4[1:]
+
+@jit("(Array(int64, 2, 'C', False, aligned=True),)")
+def compute_points_dots(M):
+    N = M.shape[0]
+    end = N
+    P3 = [[0.,0.]]
+    P4 = [[0.,0.]]
+    for x in range(1,N+1):
+        for y in range(1,N+1):
+            if M[end-y,x-1] == 1:
+                X,Y = points_path(x,y)
+                type_dom = type_of_domino(x,y)
+                if type_dom == 3:
+                    P3.append([X[0],Y[0]])
+                elif type_dom == 4:
+                    P4.append([X[0],Y[0]])
+    for x in range(1,N+1):
+        if x%2 == 0:
+            P3.append([x,0.])
+    return np.array(P3[1:]),np.array(P4[1:])
 
 @jit()
 def ext_type_of_domino(x,y):
