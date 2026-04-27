@@ -1,2 +1,3 @@
-from .RT import Aztec,Hexagon,config,data_size
-#__all__ = ['Aztec','Hexagon','config']
+from ._RT import Aztec,Hexagon,config
+from ._reduce_weight import clear_CTower
+__all__ = ['Aztec','Hexagon','config','clear_CTower']

@@ -1,9 +1,9 @@
-from .weight_aztec import weight_aztec
-from .weight_hexagon import weight_hexagon
-from .reduce_weight import reduce_weight,reduce_weight_hd
-from .draw_dominos import draw_dominos
-from .draw_lozenges import draw_lozenges
-from .shuffling import shuffling,shuffling_hd
+from ._weight_aztec import weight_aztec
+from ._weight_hexagon import weight_hexagon
+from ._reduce_weight import reduce_weight,reduce_weight_hd
+from ._draw_dominos import draw_dominos
+from ._draw_lozenges import draw_lozenges
+from ._shuffling import shuffling,shuffling_hd
 from numpy import round,array2string,ndarray,round
 
 def format_bytes(size):
