@@ -1,21 +1,21 @@
 from numpy import zeros,ascontiguousarray,isinf
 from numba import njit
 from numba.typed import List
-from numpy import load, save
+from numpy import save
 from tqdm import tqdm
 import os
 
 @njit("(float64, float64, float64, float64)")
-def red_cases_tmp(w,x,y,z): # at most one value is 0 !!!
+def red_cases_tmp(w,x,y,z): 
     if w == 0:
         tmp_w = 0
     elif z == 0:
         tmp_w = w/(x*y)
     elif x*y == 0:
         tmp_w = 1/z
-    elif isinf(w): # what if multiple values are inf !!!
+    elif isinf(w): 
         tmp_w = 1/z
-    elif isinf(x) or isinf(y) or isinf(z):
+    elif isinf(x*y) or isinf(z):
         tmp_w = 0
     else:
         tmp_w = w/(w*z+x*y)
@@ -107,3 +107,19 @@ def reduce_weight_hd(W):
         C = reduction(C)
         save('CTower/'+str(k),C)
     return
+
+
+@njit("(Array(float64, 2, 'C', False, aligned=True),)")
+def reduce_weight_memory(W):
+    K = W.shape[0] // 2
+    C = W.copy()
+    for k in range(K-1):
+        for m in range(K-k):
+            for n in range(K-k):
+                d = C[k+2*m,k+2*n]*C[k+2*m+1,k+2*n+1]+C[k+2*m+1,k+2*n]*C[k+2*m,k+2*n+1]
+                w,x,y,z = C[k+2*m,k+2*n],C[k+2*m,k+2*n+1],C[k+2*m+1,k+2*n],C[k+2*m+1,k+2*n+1]
+                C[k+2*m,k+2*n]     = z/d
+                C[k+2*m,k+2*n+1]   = y/d
+                C[k+2*m+1,k+2*n]   = x/d
+                C[k+2*m+1,k+2*n+1] = w/d
+    return C

@@ -104,7 +104,7 @@ def shuffling_helper(M,A,C,k):
                     M[A+2*m,A+2*n],M[A+2*m+1,A+2*n+1]= 0,0
                     M[A+2*m,A+2*n+1],M[A+2*m+1,A+2*n]= 1,1
 
-#@jit#("(ListType(Array(float64, 2, 'C')),)")
+
 def shuffling_hd(N):
     M = zeros((N,N),dtype=int8)
     
@@ -130,4 +130,59 @@ def shuffling_hd(N):
         A = N//2-1-k   
         
         shuffling_helper(M,A,C,k)
+    return M
+
+
+@njit("(Array(float64, 2, 'C', False, aligned=True),)")
+def shuffling_memory(C0):
+    C = C0.copy()
+    N = C.shape[0]
+    M = zeros((N,N),dtype=int8)
+
+    # Initiate
+    A = N//2-1
+    w,x,y,z = C[A,A],C[A,A+1],C[A+1,A],C[A+1,A+1]
+
+    tmp = (w*z+x*y)
+
+
+    prob = (w*z)/tmp
+    if random()<prob:
+        M[A,A],M[A+1,A+1]= 1,1
+        M[A,A+1],M[A+1,A]= 0,0
+    else:
+        M[A,A],M[A+1,A+1]= 0,0
+        M[A,A+1],M[A+1,A]= 1,1
+
+    for k in range(1,N//2):
+        A = N//2-1-k   
+
+        # destruction + flip (+ reconstruct)
+        for m in range(k+1):
+            for n in range(k+1):
+                # reconstruct
+                w,x,y,z = C[A+2*m,A+2*n],C[A+2*m+1,A+2*n],C[A+2*m,A+2*n+1],C[A+2*m+1,A+2*n+1]
+                d = w*z+x*y
+                C[A+2*m,A+2*n],C[A+2*m+1,A+2*n+1] = C[A+2*m+1,A+2*n+1]/d, C[A+2*m,A+2*n]/d
+                C[A+2*m,A+2*n+1],C[A+2*m+1,A+2*n] = C[A+2*m+1,A+2*n]/d, C[A+2*m,A+2*n+1]/d
+
+                # destruction + flip
+                tmp = M[A+2*m,A+2*n]+M[A+2*m+1,A+2*n]+M[A+2*m,A+2*n+1]+M[A+2*m+1,A+2*n+1]
+                if tmp>1:
+                    M[A+2*m,A+2*n],M[A+2*m+1,A+2*n],M[A+2*m,A+2*n+1],M[A+2*m+1,A+2*n+1]=0,0,0,0
+                elif tmp == 1:
+                    M[A+2*m,A+2*n],M[A+2*m+1,A+2*n+1]=M[A+2*m+1,A+2*n+1],M[A+2*m,A+2*n]
+                    M[A+2*m,A+2*n+1],M[A+2*m+1,A+2*n]=M[A+2*m+1,A+2*n],M[A+2*m,A+2*n+1]
+
+        for m in range(k+1):
+            for n in range(k+1):
+                if no_neighbor(M,k,m,n):
+                    w,x,y,z = C[A+2*m,A+2*n],C[A+2*m,A+2*n+1],C[A+2*m+1,A+2*n],C[A+2*m+1,A+2*n+1]
+                    prob = (w*z)/(w*z+x*y)
+                    if random()<prob:
+                        M[A+2*m,A+2*n],M[A+2*m+1,A+2*n+1]= 1,1
+                        M[A+2*m,A+2*n+1],M[A+2*m+1,A+2*n]= 0,0
+                    else:
+                        M[A+2*m,A+2*n],M[A+2*m+1,A+2*n+1]= 0,0
+                        M[A+2*m,A+2*n+1],M[A+2*m+1,A+2*n]= 1,1
     return M

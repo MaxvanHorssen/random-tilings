@@ -6,10 +6,7 @@ import numpy as np
 import re
 
 
-def draw_Hexagon(n,M,a=1,b=1,c=1,skewed_grid=False,edge=0,paths=False,dots=False,coloring='standard',dpi=100,show_figure=False):
-    edge = str(edge)
-    fig = draw_lozenges(n,M,False,a,b,c,skewed_grid,edge,paths,dots,coloring,False,dpi,show_figure)
-    return fig
+
 
 def draw_lozenges(n,M,gap,a,b,c,skewed_grid,edge,paths,dots,coloring,show_gap,dpi,show_figure):
     A = int(np.round(a*n))
