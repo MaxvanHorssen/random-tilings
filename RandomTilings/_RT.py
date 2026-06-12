@@ -1,9 +1,8 @@
 from ._weight_aztec import weight_aztec
 from ._weight_hexagon import weight_hexagon
-from ._reduce_weight import reduce_weight,reduce_weight_hd,reduce_weight_memory,clear_CTower
+from ._core import reduce_weight,reduce_weight_hd,clear_CTower,shuffling,shuffling_hd
 from ._draw_dominos import draw_dominos
 from ._draw_lozenges import draw_lozenges
-from ._shuffling import shuffling,shuffling_hd,shuffling_memory
 from numpy import round,array2string,ndarray,round,ascontiguousarray
 
 def _format_bytes(size):
@@ -14,25 +13,29 @@ def _format_bytes(size):
         i += 1
     return f"{size:.2f} {units[i]}"
 
-def _storage_aztec(n):
-    bytes = 32*n*(n+1)*(2*n+1)/6 + 4 * n**2
+def _storage_aztec(n,hd_mode = False):
+    if hd_mode:
+        bytes = 32*n*(n+1)*(2*n+1)/6 + 4 * n**2
+    else :
+        bytes = 16 * n**2
     return bytes
-    
-def _storage_hexa(n,a=1,b=1,c=1):
-    N = (int(round(a*n))+int(round(b*n))+int(round(c*n))-1)
-    return _storage_aztec(N)
 
-def compute_storage_aztec(n):
+    
+def _storage_hexa(n,a=1,b=1,c=1,hd_mode=False):
+    N = (int(round(a*n))+int(round(b*n))+int(round(c*n))-1)
+    return _storage_aztec(N,hd_mode)
+
+def compute_storage_aztec(n,hd_mode= False):
     '''Estimates the needed storage to compute the aztec diamond of size n.
     Note that the actual storage is slightly higher, since this estimate does
     not include the storage needed for the rendered plot itself.'''
-    print(_format_bytes(_storage_aztec(n)))
+    print(_format_bytes(_storage_aztec(n,hd_mode)))
 
-def compute_storage_hexagon(n,a=1,b=1,c=1):
+def compute_storage_hexagon(n,a=1,b=1,c=1,hd_mode=False):
     '''Estimates the needed storage to compute the random hexagon of size n*(a+b+c).
     Note that the actual storage is slightly higher, since this estimate does not 
     include the storage needed for the rendered plot itself.'''
-    print(_format_bytes(_storage_hexa(n,a,b,c)))
+    print(_format_bytes(_storage_hexa(n,a,b,c,hd_mode)))
     
 
 class data_size:
@@ -72,7 +75,9 @@ class Config:
      - free_storage : Displays the free storage.
      - hd_mode      : Enables or disable the right to use the hard drive mode, this instance can be
                       changed using  "config.set_hd_mode".'''
-    hd_mode = False
+    hd_mode      = False
+    warnings     = True
+    mpl_backend  = 'Inline'
     max_storage  = data_size(5*2**30)
     free_storage = data_size(5*2**30)
     used_storage = data_size(0)
@@ -95,6 +100,32 @@ class Config:
                 msg += 'others data. Consequenctly, they can not be properly shuffeld of plotted.'
                 print(msg)
             object.__setattr__(self,name,bool(value))
+        elif name == 'warnings':
+            if self.warnings == False and value:
+                msg  = 'Warnings regarding numerical instabilities are now disabled!'
+            object.__setattr__(self,name,bool(value))
+
+        elif name == 'mpl_backend':
+            from IPython import get_ipython
+            ip = get_ipython()
+            if ip is None:
+                raise RuntimeError("This function must be run inside IPython/Jupyter.")
+            
+        
+            if value == "Interactive" or value == "interactive":
+                value = "Interactive"
+                if self.mpl_backend!= value:
+                    ip.run_line_magic("matplotlib", "widget")
+            elif value == "Inline" or value == "inline":
+                value = "Inline"
+                if self.mpl_backend!= value:
+                    ip.run_line_magic("matplotlib", "inline")
+            
+            else:
+                raise ValueError("mode must be 'interactive', 'inline', or 'notebook'")
+            
+            object.__setattr__(self,name,value)
+
         else:
             object.__setattr__(self,name,value)
 
@@ -106,17 +137,28 @@ class Config:
         max_storage = (max_len- len(max_storage))*' '+max_storage
         used_storage = (max_len- len(used_storage))*' '+used_storage
         free_storage = (max_len- len(free_storage))*' '+free_storage
+
+
         string  = 'Maximum Storage : ' + max_storage + '\n'
         string += 'Currently Used  : ' + used_storage + '\n'
         string += 'Free Storage    : ' + free_storage + '\n'
-        string += 'Hard Drive Mode : ' + str(self.hd_mode)
+        string += 'Warnings        : ' + ['Disabled','Enabled'][self.warnings]+'\n'
+        string += 'Hard Drive Mode : ' + ['Disabled','Enabled'][self.hd_mode]+ '\n'
+        string += 'MPL Backend     : ' + self.mpl_backend
         return string
     
     def set_max_storage(self,S):
         self.max_storage = S
-    def set_hd_mode(self,bool):
-        self.hd_mode = bool
+    def set_hd_mode(self,val):
+        self.hd_mode = bool(val)
 
+    def set_mpl_backend(self,mode):
+        """
+        mode:
+            "interactive" -> Jupyter widget backend
+            "inline"      -> Classic inline plots
+        """
+        self.mpl_backend = mode
 
 config = Config()
 
@@ -135,9 +177,10 @@ class RandomTiling:
     
 
 
-    def __init__(self,desc,C,plot,storage, _type):
+    def __init__(self,desc,C,E,plot,storage, _type):
         self.__desc = desc
         self.__C = C
+        self.__E = E
         self.__plot = plot
         self.__M = None
         self.__type = _type
@@ -154,6 +197,7 @@ class RandomTiling:
         config.used_storage -= data_size(self.storage.bytes)
         del(self.__desc)
         del(self.__C)
+        del(self.__E)
         del(self.__plot)
         del(self.__M)
 
@@ -163,12 +207,12 @@ class RandomTiling:
         if self.__closed == False:
             if self.__type <0:
                 self.__M = shuffling_hd(-self.__type)
-            elif self.__type == 1:
-                self.__M = shuffling_memory(self.__C)
             else:
-                self.__M = shuffling(self.__C)
+                self.__M,of = shuffling(self.__C,self.__E)
+                if of and config.warnings:
+                    print('Numerical instability detected: Overflow/Underflow!')
         else:
-            print('Random Tiling is already closed, create a new one!')
+            print('This random riling is already closed, create a new one!')
 
     def plot(self,**args):
         '''This function creates a figure containing the plot of the random tiling.
@@ -209,24 +253,39 @@ class RandomTiling:
         config.used_storage -= self.storage
         self.__desc = 'Closed Random Tiling'
         self.__C = None
-        self.__plot = None
+        self.__E = None
         self.__M = None
+        self.__plot = None
         if self.__type<0:
             clear_CTower()
         self.__type = None
         self.storage = data_size(0)
     
     def get_M(self):
-        return self.__M.copy()
-    def get_C(self):
-        return self.__C.copy()
+        if self.__closed == False:
+            if self.__type<0:
+                print('Not available for hd-mode.')
+            elif type(self.__M)== None:
+                print('Random tiling needs to be shuffeld first!')
+            else:
+                return self.__M.copy()
+        else:
+            print('This random tiling is already closed, create a new one!')
+    def get_CE(self):
+        if self.__closed== False:
+            if self.__type<0:
+                print('Not available for hd-mode.')
+            else:
+                return self.__C.copy(),self.__E.copy()
+        else:
+            print('This random tiling is already closed, create a new one!')
             
 
 #################################
 # Aztec
 #################################
 
-def Aztec(n,w,gap=False,hard_drive_mode=False,memory_mode = False):
+def Aztec(n,w,gap=False,hard_drive_mode=False):
     '''Creates a random aztec diamond.
     Input:
     ---------
@@ -236,11 +295,6 @@ def Aztec(n,w,gap=False,hard_drive_mode=False,memory_mode = False):
      - hard_drive_mode : bool (default = False); if true then routine stores actively most data on
                          the hard drive. The option is intendet for large tilings. Note to clear the
                          storage after, using the comand 'close', see the example below.
-     - memory_mode     : bool (default = False); uses a special memory efficient implementation, note
-                         that this implementation will give "division by zero errors" if no possible 
-                         tiling can be found. It might also be the case that this happens due to 
-                         numerical issues. The memory mode can not handle forced tiles, hence 'gap'
-                         cannot be used.
                          
     Output: RT (random tiling) object.
     
@@ -256,9 +310,9 @@ def Aztec(n,w,gap=False,hard_drive_mode=False,memory_mode = False):
     memory again. This is important when working with large tiles. Only close the tiling once you are 
     finished creating all wanted plots. After closing no new plots can be created.
     '''
-    storage = data_size(_storage_aztec(n))
+    storage = data_size(_storage_aztec(n,hd_mode=hard_drive_mode))
     if config.used_storage + storage > config.max_storage:
-        msg  = 'Required storage ('+ _format_bytes(_storage_aztec(n))
+        msg  = 'Required storage ('+ _format_bytes(_storage_aztec(n,hard_drive_mode))
         msg += ') exceeds free storage ('+config.free_storage.__str__()+').\n'
         msg += 'Increase maximum storage or delete instances of Random Tilings.'
         print(msg)
@@ -303,25 +357,20 @@ def Aztec(n,w,gap=False,hard_drive_mode=False,memory_mode = False):
                     if 1 <= N-(yWest-1) and N-(yWest-1) <= N and 1 <= xWest and xWest <= N:
                         W[end-yWest,xWest-1] = 0
 
-    if hard_drive_mode and memory_mode:
-        print('Cannot use "Hard Drive Mode" together with "Memory Mode".')
-        return
-    elif type(gap)==ndarray and memory_mode:
-        print('Cannot use "gap"together with "Memory Mode".')
-    elif hard_drive_mode:
+    if hard_drive_mode:
         if config.hd_mode==False:
             print('Hard drive mode also needs to be enabled via "config.set_hd_mode(True)".')
             return
         _type = -W.shape[0]//2
         C = reduce_weight_hd(W)
-    elif memory_mode:
-        _type = 1
-        C = reduce_weight_memory(W)
+        E = None
     else:
         _type = 0
-        C = reduce_weight(W)
+        C,E,of = reduce_weight(W)
+        if of and config.warnings:
+            print('Numerical instability detected: Overflow/Underflow!')
     
-    return RandomTiling(desc,C,draw_Aztec,storage,_type)
+    return RandomTiling(desc,C,E,draw_Aztec,storage,_type)
 
 
 
@@ -356,9 +405,9 @@ def Hexagon(n,w,a=1,b=1,c=1,gap=False,hard_drive_mode=False):
     memory again. This is important when working with large tiles. Only close the tiling once you are 
     finished creating all wanted plots. After closing no new plots can be created.
     '''
-    storage = data_size(_storage_hexa(n,a,b,c))
+    storage = data_size(_storage_hexa(n,a,b,c,hard_drive_mode))
     if config.used_storage + storage > config.max_storage:
-        msg  = 'Required storage ('+ _format_bytes(_storage_hexa(n,a,b,c))
+        msg  = 'Required storage ('+ _format_bytes(_storage_hexa(n,a,b,c,hard_drive_mode))
         msg += ') exceeds free storage ('+config.free_storage.__str__()+').\n'
         msg += 'Increase maximum storage or delete instances of Random Tilings.'
         print(msg)
@@ -401,15 +450,19 @@ def Hexagon(n,w,a=1,b=1,c=1,gap=False,hard_drive_mode=False):
                 if 1 <= N-(yHorizontal-1) and N-(yHorizontal-1) <= N and 1 <= xHorizontal and xHorizontal <= N:
                     W[end-yHorizontal,xHorizontal-1] = 0
 
+
     if hard_drive_mode:
         if config.hd_mode==False:
             print('Hard drive mode also needs to be enabled via "config.set_hd_mode(True)".')
             return
-        _type = -W.shape[0]
+        _type = -W.shape[0]//2
         C = reduce_weight_hd(W)
+        E = None
     else:
         _type = 0
-        C = reduce_weight(W)
+        C,E,of = reduce_weight(W)
+        if of and config.warnings:
+            print('Numerical instability detected: Overflow/Underflow!')
 
-    return RandomTiling(desc,C,draw_Hexagon,storage,_type)
+    return RandomTiling(desc,C,E,draw_Hexagon,storage,_type)
 

@@ -1,9 +1,9 @@
-from matplotlib.patches import Polygon
-from matplotlib.collections import PatchCollection, LineCollection
-from numba import jit
+from matplotlib.collections import LineCollection,PolyCollection
+from numba import njit
 import matplotlib.pyplot as plt
 import numpy as np
 import re
+
 
 
 
@@ -13,6 +13,7 @@ def draw_lozenges(n,M,gap,a,b,c,skewed_grid,edge,paths,dots,coloring,show_gap,dp
     B = int(np.round(b*n))
     C = int(np.round(c*n))
     path_scaling = 10/max(A,B,C)
+    edge = float(edge)
 
     margin = 1
     fig, ax = plt.subplots(dpi=dpi)
@@ -26,14 +27,7 @@ def draw_lozenges(n,M,gap,a,b,c,skewed_grid,edge,paths,dots,coloring,show_gap,dp
         ax.set_aspect(2/(3**0.5), adjustable='box')
     ax.axis('off')
 
-    if edge == 'egde scaling' or edge == 'colored edge scaling':
-        edge_scaling = 10/max(A,B,C)
-    else:
-        if re.fullmatch(r'[+-]?(\d+(\.\d*)?|\.\d+)', edge):
-            edge_scaling = float(edge)
-        else:
-            print('Invalid edge scaling')
-            return 'Invalid edge scaling'
+
 
     if paths:
         if coloring == 'standard':
@@ -47,14 +41,13 @@ def draw_lozenges(n,M,gap,a,b,c,skewed_grid,edge,paths,dots,coloring,show_gap,dp
             else:
                 print('Invalid coloring')
                 return 'Invalid coloring'
-
-        points_up,points_down,points_free = compute_points(M,A,B,C,skewed_grid,False)
-        ax.add_collection(PatchCollection([Polygon(point) for point in points_up]
-                                        ,facecolor='none',edgecolor='k',linewidth=edge_scaling))
-        ax.add_collection(PatchCollection([Polygon(point) for point in points_down]
-                                        ,facecolor='none',edgecolor='k',linewidth=edge_scaling))
-        ax.add_collection(PatchCollection([Polygon(point) for point in points_free]
-                                        ,facecolor='none',edgecolor='k',linewidth=edge_scaling))
+            
+        
+        if edge >0:
+            points_up,points_down,points_free = compute_points(M,A,B,C,skewed_grid,False)
+            ax.add_collection(PolyCollection(points_up,facecolor='none',edgecolor='k',linewidth=edge))
+            ax.add_collection(PolyCollection(points_down,facecolor='none',edgecolor='k',linewidth=edge))
+            ax.add_collection(PolyCollection(points_free,facecolor='none',edgecolor='k',linewidth=edge))
 
         points_up,points_down,points_free = compute_points(M,A,B,C,skewed_grid,True)
         ax.add_collection(LineCollection(points_up,colors=color_up,linewidths=path_scaling))
@@ -79,7 +72,7 @@ def draw_lozenges(n,M,gap,a,b,c,skewed_grid,edge,paths,dots,coloring,show_gap,dp
                 points_gap_lines.append([[x,y1],[x,y2]])
             ax.add_collection(LineCollection(points_gap_lines, colors='r', linewidths=path_scaling))
 
-        if edge_scaling == 0:
+        if edge == 0:
             if skewed_grid:
                 ax.add_collection(LineCollection([[(0,0),(0,2*A)],[(0,2*A),(2*C,2*(A+C))],[(2*C,2*(A+C)),(2*(B+C),2*(A+C))],
                                                 [(2*(B+C),2*(A+C)),(2*(B+C),2*C)],[(2*(B+C),2*C),(2*B,0)],[(2*B,0),(0,0)]],
@@ -111,27 +104,17 @@ def draw_lozenges(n,M,gap,a,b,c,skewed_grid,edge,paths,dots,coloring,show_gap,dp
                 print('Invalid coloring')
                 return 'Invalid coloring'
 
+
         points_up,points_down,points_free = compute_points(M,A,B,C,skewed_grid,False)
-        if edge == 'colored edge scaling':
-            ax.add_collection(PatchCollection([Polygon(point) for point in points_up]
-                                            ,facecolor=color_up,edgecolor=color_up,linewidth=edge_scaling))
-            ax.add_collection(PatchCollection([Polygon(point) for point in points_down]
-                                            ,facecolor=color_down,edgecolor=color_down,linewidth=edge_scaling))
-            ax.add_collection(PatchCollection([Polygon(point) for point in points_free]
-                                            ,facecolor=color_free,edgecolor=color_free,linewidth=edge_scaling))
-        else:
-            ax.add_collection(PatchCollection([Polygon(point) for point in points_up]
-                                            ,facecolor=color_up,edgecolor='k',linewidth=edge_scaling))
-            ax.add_collection(PatchCollection([Polygon(point) for point in points_down]
-                                            ,facecolor=color_down,edgecolor='k',linewidth=edge_scaling))
-            ax.add_collection(PatchCollection([Polygon(point) for point in points_free]
-                                            ,facecolor=color_free,edgecolor='k',linewidth=edge_scaling))
+        ax.add_collection(PolyCollection(points_up,facecolor=color_up,edgecolor='k',linewidth=edge))
+        ax.add_collection(PolyCollection(points_down,facecolor=color_down,edgecolor='k',linewidth=edge))
+        ax.add_collection(PolyCollection(points_free,facecolor=color_free,edgecolor='k',linewidth=edge))
 
     if show_figure:
         plt.show()
     return fig
 
-@jit()
+@njit("(int64, int64)",cache=True)
 def type_of_lozenge(x,y):
     # 'path up'
     if x%2 == 1 and y%2 == 0:
@@ -143,7 +126,7 @@ def type_of_lozenge(x,y):
     else:
         return 3
 
-@jit()
+@njit("(int64, int64, int64, int64, int64)",cache=True)
 def in_hexagon(x,y,A,B,C):
     if x <= 2*min(B,C):
         return y >= 1 and y <= 2*A+x-1
@@ -156,7 +139,7 @@ def in_hexagon(x,y,A,B,C):
     else:
         return False
 
-@jit()
+@njit("(int64, int64, bool)",cache=True)
 def points_path(x,y,skewed_grid):
     type_loz = type_of_lozenge(x,y)
     if type_loz == 1:
@@ -176,7 +159,7 @@ def points_path(x,y,skewed_grid):
         Y = np.array([0,0])
     return X, Y
 
-@jit()
+@njit("(int64, int64, bool)",cache=True)
 def points_lozenge(x,y,skewed_grid):
     type_loz = type_of_lozenge(x,y)
     if type_loz == 1:
@@ -199,7 +182,7 @@ def points_lozenge(x,y,skewed_grid):
             Y = y+np.array([-1-(x-2)//2,1-x//2,1-(x+2)//2,-1-x//2])
     return X, Y
 
-@jit("(Array(int8, 2, 'C', False, aligned=True), int64, int64, int64, boolean, boolean)")
+@njit("(Array(int8, 2, 'C', False, aligned=True), int64, int64, int64, boolean, boolean)",cache=True)
 def compute_points(M,A,B,C,skewed_grid,paths):
     N = M.shape[0]
     P1 = [[(0,0),(0,0)]]
@@ -221,7 +204,7 @@ def compute_points(M,A,B,C,skewed_grid,paths):
                     P3 += [list(zip(X,Y))]
     return P1[1:],P2[1:],P3[1:]
 
-@jit("(Array(int8, 2, 'C', False, aligned=True), int64, int64, int64, boolean)")
+@njit("(Array(int8, 2, 'C', False, aligned=True), int64, int64, int64, boolean)",cache=True)
 def compute_points_dots(M,A,B,C,skewed_grid):
     N = M.shape[0]
     P1 = [[0,0]]

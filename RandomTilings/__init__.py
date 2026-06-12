@@ -30,3 +30,4 @@ _disable_jupyter_output_cache()
 
 # Remove helper function from package namespace
 del _disable_jupyter_output_cache
+

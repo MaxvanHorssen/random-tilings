@@ -1,7 +1,6 @@
-from matplotlib.patches import Polygon
-from matplotlib.collections import PatchCollection, LineCollection
+from matplotlib.collections import PolyCollection, LineCollection
 from matplotlib import transforms
-from numba import jit
+from numba import njit
 import matplotlib.pyplot as plt
 import numpy as np
 import re
@@ -10,6 +9,7 @@ import re
 def draw_dominos(M,gap,edge,paths,dots,rotated,coloring,show_gap,dpi,show_figure):
     N = M.shape[0]
     path_scaling = 20/N
+    edge = float(edge)
 
     margin = 1
     fig, ax = plt.subplots(dpi=dpi)
@@ -22,14 +22,6 @@ def draw_dominos(M,gap,edge,paths,dots,rotated,coloring,show_gap,dpi,show_figure
     ax.set_aspect('equal')
     ax.axis('off')
 
-    if edge == 'egde scaling':
-        edge_scaling = 20/N
-    else:
-        if re.fullmatch(r'[+-]?(\d+(\.\d*)?|\.\d+)', edge):
-            edge_scaling = float(edge)
-        else:
-            print('Invalid edge scaling')
-            return 'Invalid edge scaling'
 
     if paths:
         if coloring == 'standard':
@@ -47,14 +39,10 @@ def draw_dominos(M,gap,edge,paths,dots,rotated,coloring,show_gap,dpi,show_figure
                 return 'Invalid coloring'
 
         points_north,points_east,points_south,points_west = compute_points(M,False)
-        patch_north = ax.add_collection(PatchCollection([Polygon(points) for points in points_north]
-                                        ,facecolor='none',edgecolor='k',linewidth=edge_scaling))
-        patch_east = ax.add_collection(PatchCollection([Polygon(points) for points in points_east]
-                                        ,facecolor='none',edgecolor='k',linewidth=edge_scaling))
-        patch_south = ax.add_collection(PatchCollection([Polygon(points) for points in points_south]
-                                        ,facecolor='none',edgecolor='k',linewidth=edge_scaling))
-        patch_west = ax.add_collection(PatchCollection([Polygon(points) for points in points_west]
-                                        ,facecolor='none',edgecolor='k',linewidth=edge_scaling))
+        patch_north = ax.add_collection(PolyCollection(points_north,facecolor='none',edgecolor='k',linewidth=edge))
+        patch_east  = ax.add_collection(PolyCollection(points_east,facecolor='none',edgecolor='k',linewidth=edge))
+        patch_south = ax.add_collection(PolyCollection(points_south,facecolor='none',edgecolor='k',linewidth=edge))
+        patch_west  = ax.add_collection(PolyCollection(points_west,facecolor='none',edgecolor='k',linewidth=edge))
 
         points_north,points_east,points_south,points_west = compute_points(M,True)
         lines_east = ax.add_collection(LineCollection(points_east,colors=color_east,linewidths=path_scaling))
@@ -80,7 +68,7 @@ def draw_dominos(M,gap,edge,paths,dots,rotated,coloring,show_gap,dpi,show_figure
                 points_gap_lines.append([[x,y1],[x,y2]])
             gap_lines = ax.add_collection(LineCollection(points_gap_lines, colors='r', linewidths=path_scaling))
 
-        if edge_scaling == 0:
+        if edge == 0:
             border = ax.add_collection(LineCollection([[(x+0.5,0.5),(x+1.5,-0.5)] for x in range(0,N,2)]
                                                      +[[(x+1.5,-0.5),(x+2.5,0.5)] for x in range(0,N,2)]
                                                      +[[(-0.5,y+1.5),(0.5,y+2.5)] for y in range(0,N,2)]
@@ -93,22 +81,14 @@ def draw_dominos(M,gap,edge,paths,dots,rotated,coloring,show_gap,dpi,show_figure
     else:
         if coloring == 'aztec gray':
             points_north1,points_north2,points_east1,points_east2,points_south1,points_south2,points_west1,points_west2 = ext_compute_points(M,False)
-            patch_north1 = ax.add_collection(PatchCollection([Polygon(points) for points in points_north1]
-                                            ,facecolor=(6.5/9,6.5/9,6.5/9),edgecolor='k',linewidth=edge_scaling))
-            patch_north2 = ax.add_collection(PatchCollection([Polygon(points) for points in points_north2]
-                                            ,facecolor=(1.5/9,1.5/9,1.5/9),edgecolor='k',linewidth=edge_scaling))
-            patch_east1 = ax.add_collection(PatchCollection([Polygon(points) for points in points_east1]
-                                            ,facecolor=(6/9,6/9,6/9),edgecolor='k',linewidth=edge_scaling))
-            patch_east2 = ax.add_collection(PatchCollection([Polygon(points) for points in points_east2]
-                                            ,facecolor=(2/9,2/9,2/9),edgecolor='k',linewidth=edge_scaling))
-            patch_south1 = ax.add_collection(PatchCollection([Polygon(points) for points in points_south1]
-                                            ,facecolor=(1/9,1/9,1/9),edgecolor='k',linewidth=edge_scaling))
-            patch_south2 = ax.add_collection(PatchCollection([Polygon(points) for points in points_south2]
-                                            ,facecolor=(7/9,7/9,7/9),edgecolor='k',linewidth=edge_scaling))
-            patch_west1 = ax.add_collection(PatchCollection([Polygon(points) for points in points_west1]
-                                            ,facecolor=(2.5/9,2.5/9,2.5/9),edgecolor='k',linewidth=edge_scaling))
-            patch_west2 = ax.add_collection(PatchCollection([Polygon(points) for points in points_west2]
-                                            ,facecolor=(7.5/9,7.5/9,7.5/9),edgecolor='k',linewidth=edge_scaling))
+            patch_north1 = ax.add_collection(PolyCollection(points_north1,facecolor=(6.5/9,6.5/9,6.5/9),edgecolor='k',linewidth=edge))
+            patch_north2 = ax.add_collection(PolyCollection(points_north2,facecolor=(1.5/9,1.5/9,1.5/9),edgecolor='k',linewidth=edge))
+            patch_east1 = ax.add_collection(PolyCollection(points_east1,facecolor=(6/9,6/9,6/9),edgecolor='k',linewidth=edge))
+            patch_east2 = ax.add_collection(PolyCollection(points_east2,facecolor=(2/9,2/9,2/9),edgecolor='k',linewidth=edge))
+            patch_south1 = ax.add_collection(PolyCollection(points_south1,facecolor=(1/9,1/9,1/9),edgecolor='k',linewidth=edge))
+            patch_south2 = ax.add_collection(PolyCollection(points_south2,facecolor=(7/9,7/9,7/9),edgecolor='k',linewidth=edge))
+            patch_west1 = ax.add_collection(PolyCollection(points_west1,facecolor=(2.5/9,2.5/9,2.5/9),edgecolor='k',linewidth=edge))
+            patch_west2 = ax.add_collection(PolyCollection(points_west2,facecolor=(7.5/9,7.5/9,7.5/9),edgecolor='k',linewidth=edge))
         else:
             if coloring == 'standard':
                 color_north = (1,0,0)
@@ -137,14 +117,10 @@ def draw_dominos(M,gap,edge,paths,dots,rotated,coloring,show_gap,dpi,show_figure
                     return 'Invalid coloring'
 
             points_north,points_east,points_south,points_west = compute_points(M,False)
-            patch_north = ax.add_collection(PatchCollection([Polygon(points) for points in points_north]
-                                            ,facecolor=color_north,edgecolor='k',linewidth=edge_scaling))
-            patch_east = ax.add_collection(PatchCollection([Polygon(points) for points in points_east]
-                                            ,facecolor=color_east,edgecolor='k',linewidth=edge_scaling))
-            patch_south = ax.add_collection(PatchCollection([Polygon(points) for points in points_south]
-                                            ,facecolor=color_south,edgecolor='k',linewidth=edge_scaling))
-            patch_west = ax.add_collection(PatchCollection([Polygon(points) for points in points_west]
-                                            ,facecolor=color_west,edgecolor='k',linewidth=edge_scaling))
+            patch_north = ax.add_collection(PolyCollection(points_north,facecolor=color_north,edgecolor='k',linewidth=edge))
+            patch_east = ax.add_collection(PolyCollection(points_east,facecolor=color_east,edgecolor='k',linewidth=edge))
+            patch_south = ax.add_collection(PolyCollection(points_south,facecolor=color_south,edgecolor='k',linewidth=edge))
+            patch_west = ax.add_collection(PolyCollection(points_west,facecolor=color_west,edgecolor='k',linewidth=edge))
 
     if rotated:
         tr = transforms.Affine2D().rotate_deg(45) + ax.transData
@@ -154,7 +130,7 @@ def draw_dominos(M,gap,edge,paths,dots,rotated,coloring,show_gap,dpi,show_figure
             lines_west.set_transform(tr)
             if show_gap:
                 gap_lines.set_transform(tr)
-            if edge_scaling == 0:
+            if edge == 0:
                 border.set_transform(tr)
 
         if coloring == 'aztec gray':
@@ -176,7 +152,7 @@ def draw_dominos(M,gap,edge,paths,dots,rotated,coloring,show_gap,dpi,show_figure
         plt.show()
     return fig
 
-@jit()
+@njit("(int64, int64)",cache=True)
 def type_of_domino(x,y):
     # 'North'
     if x%2 == 0 and y%2 == 0:
@@ -191,7 +167,7 @@ def type_of_domino(x,y):
     else:
         return 4
 
-@jit()
+@njit("(int64, int64)",cache=True)
 def points_path(x,y):
     type_domino = type_of_domino(x,y)
     if type_domino == 1:
@@ -208,7 +184,7 @@ def points_path(x,y):
         Y = y + np.array([0.,0.])
     return X, Y
 
-@jit()
+@njit("(int64, int64)",cache=True)
 def points_domino(x,y):
     type_domino = type_of_domino(x,y)
     if type_domino == 1 or type_domino == 3:
@@ -219,7 +195,7 @@ def points_domino(x,y):
         Y = y + np.array([-0.5,1.5,0.5,-1.5])
     return X, Y
 
-@jit("(Array(int8, 2, 'C', False, aligned=True), boolean)")
+@njit("(Array(int8, 2, 'C', False, aligned=True), boolean)",cache=True)
 def compute_points(M,paths):
     N = M.shape[0]
     end = N
@@ -246,7 +222,7 @@ def compute_points(M,paths):
                     P4 += [list(zip(X,Y))]
     return P1[1:],P2[1:],P3[1:],P4[1:]
 
-@jit("(Array(int8, 2, 'C', False, aligned=True),)")
+@njit("(Array(int8, 2, 'C', False, aligned=True),)",cache=True)
 def compute_points_dots(M):
     N = M.shape[0]
     end = N
@@ -266,7 +242,7 @@ def compute_points_dots(M):
             P3.append([x,0.])
     return np.array(P3[1:]),np.array(P4[1:])
 
-@jit()
+@njit("(int64, int64)",cache=True)
 def ext_type_of_domino(x,y):
     type_domino = type_of_domino(x,y)
     # 'North 1/2'
@@ -282,7 +258,7 @@ def ext_type_of_domino(x,y):
     else:
         return 7 + int((x-y)%4 == 1)
 
-@jit("(Array(int8, 2, 'C', False, aligned=True), boolean)")
+@njit("(Array(int8, 2, 'C', False, aligned=True), boolean)",cache=True)
 def ext_compute_points(M,paths):
     N = M.shape[0]
     end = N
