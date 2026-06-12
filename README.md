@@ -1,10 +1,7 @@
 Random tilings
 ==============
 
-This project provides the Python package `RandomTilings`, which makes it possible to generate random tilings of the Aztec diamond and the hexagon for doubly periodic weightings.
-This package is a Python adaptation of the Matlab program `MatlabTilings` by Christophe Charlier, which is based on the shuffling algorithm as described in [arXiv:0111034](https://arxiv.org/abs/math/0111034).
-The original Matlab implementation can be found on his [homepage](https://sites.google.com/view/cchar/home). We are grateful to Christophe Charlier for
-allowing us to make this package publicly available.
+This project provides the Python package `RandomTilings`, which makes it possible to generate random tilings of the Aztec diamond and the hexagon for doubly periodic weightings. This package is a Python adaptation of the Matlab program `MatlabTilings` by Christophe Charlier, which is based on the shuffling algorithm as described in [arXiv:0111034](https://arxiv.org/abs/math/0111034). The original Matlab implementation can be found on his [homepage](https://sites.google.com/view/cchar/home). We are grateful to Christophe Charlier for allowing us to make this package publicly available.
 
 <p align="center">
 <img width="383" height="389" alt="image" src="https://github.com/user-attachments/assets/b3d983e2-561e-461c-8fda-cfd6c933a24d" />
@@ -12,21 +9,23 @@ allowing us to make this package publicly available.
 </p>
 
 # Important Notes
-A documentation for the the routines provided by `RandomTilings` can be found in the pdf `Documentation for RandomTilings`. 
-In the current version, not all options from `MatlabTilings` have been implemented in the Python
-package. Therefore, `Documentation for RandomTilings` mainly discusses the necessary changes important for
-the Python package. Some parts of the [`Help file`](https://sites.google.com/view/cchar/random-tilings)  for `MatlabTilings` are copied for context. For a
-more complete description, the reader should consult the [`Help file`](https://sites.google.com/view/cchar/random-tilings); please keep in mind that only some
-features are available in the Python package.
+A documentation for the the routines provided by `RandomTilings` can be found in the pdf `Documentation for RandomTilings`.  In the current version, not all options from `MatlabTilings` have been implemented in the Python package. Therefore, `Documentation for RandomTilings` mainly discusses the necessary changes important for the Python package. Some parts of the [`Help file`](https://sites.google.com/view/cchar/random-tilings)  for `MatlabTilings` are copied for context. For a more complete description, the reader should consult the [`Help file`](https://sites.google.com/view/cchar/random-tilings); please keep in mind that only some features are available in the Python package.
 
 Some examples using the routines from the Python package can be found in the Jupyter notebook [`Examples - How to use`](https://github.com/MaxvanHorssen/random-tilings/blob/main/Examples%20-%20How%20to%20use.ipynb) or in the `How to use` section below.
 
 **The Power of Numba**      
-The creation of these random tilings is numerically expensive. In order to drastically improve the performance, this package makes heavy use of the `Numba` compiler `jit`.
-Therefore, installation of `Numba` is required to be able to run the package. Note that importing `RandomTilings` might take some time, as all subroutines have to be compiled.
+The creation of these random tilings is numerically expensive. In order to drastically improve the performance, this package makes heavy use of the `Numba` compiler. Therefore, installation of `Numba` is required to be able to run the package. Note that importing `RandomTilings` might take some time, as all subroutines have to be compiled.
+
+**The New Version**
+Version 2 introduces a new optimized implementation of the core algorithms. The main improvement is a reduction in memory complexity from cubic to quadratic, resulting in significantly better memory efficiency and improved runtime performance. Overall, Version 2 is roughly 25 faster and it can handle bigger tilings. In addition, the structure of the main object has changed: instead of using a single function call to generate a plot, Version 2 follows an object-oriented design. This makes it possible to adjust plot settings or create new instances of a random tiling without recomputing everything from scratch. The previous implementation remains available in the GitHub branch `version-1`, but future development and support will focus on Version 2.
+<p align="center">
+<img width="789" height="290" alt="image" src="https://github.com/user-attachments/assets/6c0b6376-e3da-4ed5-a7f2-2d4d8699efbc" />
+</p>
+
 
 # Acknowledgments
 We would like to express our sincere gratitude to Christophe Charlier for providing the original Matlab implementation and for giving us permission to release this Python adaptation of his program.
+
 
 # How to get started
 The package `RandomTilings` makes heavy use of:
@@ -34,21 +33,17 @@ The package `RandomTilings` makes heavy use of:
  - Matplotlib
  - Numba
 
+Additionally, the `RandomTilings` requires the following modules:
+ - tqdm
+ - os
+ - re
+
 Therefore, make sure that these libraries are installed beforehand. Once the installation is successful, you only have to copy the folder `RandomTilings` in the same folder as your Python script or Jupyter notebook, and you can import the routines by simply calling:
 ```python
- from RandomTilings import *
+ import RandomTilings as RT
 ```
-Note that by importing all necessary subroutines will be compiled by `Numba.jit`, therefore it might take some time.
+Note that by importing all necessary subroutines will be compiled by `Numba.njit`, therefore it might take some time.
 
-If you are working in a Jupyter notebook it is recommended to use the following import:
-```python
-from RandomTilings import *
-import matplotlib.pyplot as plt
-plt.figure()
-plt.close()
-_ = plt.ioff()
-```
-Doing so it will prevent the issue that each image is plotted twice.
 
 # Example - How to use
 ## Random tilings of a hexagon
