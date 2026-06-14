@@ -1,7 +1,7 @@
 import numpy as np
 from numba import jit
 
-@jit("(int64, Array(float64, 2, 'C', False, aligned=True))")
+@jit("(int64, Array(float64, 2, 'C', False, aligned=True))",cache=True)
 def weight_aztec(n,w):
     N = 2*n
     W = np.zeros((N,N))

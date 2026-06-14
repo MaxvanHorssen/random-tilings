@@ -1,6 +1,6 @@
 from matplotlib.collections import PolyCollection, LineCollection
 from matplotlib import transforms
-from numba import jit
+from numba import njit
 import matplotlib.pyplot as plt
 import numpy as np
 import re
@@ -152,7 +152,7 @@ def draw_dominos(M,gap,edge,paths,dots,rotated,coloring,show_gap,dpi,show_figure
         plt.show()
     return fig
 
-@jit()
+@njit("(int64, int64)",cache=True)
 def type_of_domino(x,y):
     # 'North'
     if x%2 == 0 and y%2 == 0:
@@ -167,7 +167,7 @@ def type_of_domino(x,y):
     else:
         return 4
 
-@jit()
+@njit("(int64, int64)",cache=True)
 def points_path(x,y):
     type_domino = type_of_domino(x,y)
     if type_domino == 1:
@@ -184,7 +184,7 @@ def points_path(x,y):
         Y = y + np.array([0.,0.])
     return X, Y
 
-@jit()
+@njit("(int64, int64)",cache=True)
 def points_domino(x,y):
     type_domino = type_of_domino(x,y)
     if type_domino == 1 or type_domino == 3:
@@ -195,7 +195,7 @@ def points_domino(x,y):
         Y = y + np.array([-0.5,1.5,0.5,-1.5])
     return X, Y
 
-@jit("(Array(int8, 2, 'C', False, aligned=True), boolean)")
+@njit("(Array(int8, 2, 'C', False, aligned=True), boolean)",cache=True)
 def compute_points(M,paths):
     N = M.shape[0]
     end = N
@@ -222,7 +222,7 @@ def compute_points(M,paths):
                     P4 += [list(zip(X,Y))]
     return P1[1:],P2[1:],P3[1:],P4[1:]
 
-@jit("(Array(int8, 2, 'C', False, aligned=True),)")
+@njit("(Array(int8, 2, 'C', False, aligned=True),)",cache=True)
 def compute_points_dots(M):
     N = M.shape[0]
     end = N
@@ -242,7 +242,7 @@ def compute_points_dots(M):
             P3.append([x,0.])
     return np.array(P3[1:]),np.array(P4[1:])
 
-@jit()
+@njit("(int64, int64)",cache=True)
 def ext_type_of_domino(x,y):
     type_domino = type_of_domino(x,y)
     # 'North 1/2'
@@ -258,7 +258,7 @@ def ext_type_of_domino(x,y):
     else:
         return 7 + int((x-y)%4 == 1)
 
-@jit("(Array(int8, 2, 'C', False, aligned=True), boolean)")
+@njit("(Array(int8, 2, 'C', False, aligned=True), boolean)",cache=True)
 def ext_compute_points(M,paths):
     N = M.shape[0]
     end = N

@@ -1,8 +1,8 @@
 from RandomTilingsV1.is_there_no_neighbour import is_there_no_neighbour
-from numba import jit
+from numba import njit
 import numpy as np
 
-@jit() #("(int64, int64, int64, int64, int64)")
+@njit("(int64, int64, int64, int64, int64)",cache=True)
 def isinhexagon(x2,y2,A,B,C):
     if x2 <= 2*min(B,C):
         return y2 >= 1 and y2 <= 2*A+x2-1
@@ -15,11 +15,11 @@ def isinhexagon(x2,y2,A,B,C):
     else:
         return False
 
-@jit() #("(int64, int64, int64, int64, int64)")
+@njit("(int64, int64, int64, int64, int64)",cache=True)
 def isinUpRightCorner(x3,y3,A,B,C):
     return (x3 >= 2*(B+C) and y3 >= 2*(A+C))
 
-@jit("(int64, Array(float64, 2, 'C', False, aligned=True), int64, float64, float64)")
+@njit("(int64, Array(float64, 2, 'C', False, aligned=True), int64, float64, float64)",cache=True)
 def weight_hexagon(n,w,a,b,c):
     A = int(np.round(a*n))
     B = int(np.round(b*n))

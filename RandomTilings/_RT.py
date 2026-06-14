@@ -77,6 +77,7 @@ class Config:
                       changed using  "config.set_hd_mode".'''
     hd_mode      = False
     warnings     = True
+    mpl_backend  = 'Inline'
     max_storage  = data_size(5*2**30)
     free_storage = data_size(5*2**30)
     used_storage = data_size(0)
@@ -103,6 +104,28 @@ class Config:
             if self.warnings == False and value:
                 msg  = 'Warnings regarding numerical instabilities are now disabled!'
             object.__setattr__(self,name,bool(value))
+
+        elif name == 'mpl_backend':
+            from IPython import get_ipython
+            ip = get_ipython()
+            if ip is None:
+                raise RuntimeError("This function must be run inside IPython/Jupyter.")
+            
+        
+            if value == "Interactive" or value == "interactive":
+                value = "Interactive"
+                if self.mpl_backend!= value:
+                    ip.run_line_magic("matplotlib", "widget")
+            elif value == "Inline" or value == "inline":
+                value = "Inline"
+                if self.mpl_backend!= value:
+                    ip.run_line_magic("matplotlib", "inline")
+            
+            else:
+                raise ValueError("mode must be 'interactive', 'inline', or 'notebook'")
+            
+            object.__setattr__(self,name,value)
+
         else:
             object.__setattr__(self,name,value)
 
@@ -114,18 +137,28 @@ class Config:
         max_storage = (max_len- len(max_storage))*' '+max_storage
         used_storage = (max_len- len(used_storage))*' '+used_storage
         free_storage = (max_len- len(free_storage))*' '+free_storage
+
+
         string  = 'Maximum Storage : ' + max_storage + '\n'
         string += 'Currently Used  : ' + used_storage + '\n'
         string += 'Free Storage    : ' + free_storage + '\n'
         string += 'Warnings        : ' + ['Disabled','Enabled'][self.warnings]+'\n'
-        string += 'Hard Drive Mode : ' + str(self.hd_mode)
+        string += 'Hard Drive Mode : ' + ['Disabled','Enabled'][self.hd_mode]+ '\n'
+        string += 'MPL Backend     : ' + self.mpl_backend
         return string
     
     def set_max_storage(self,S):
         self.max_storage = S
-    def set_hd_mode(self,bool):
-        self.hd_mode = bool
+    def set_hd_mode(self,val):
+        self.hd_mode = bool(val)
 
+    def set_mpl_backend(self,mode):
+        """
+        mode:
+            "interactive" -> Jupyter widget backend
+            "inline"      -> Classic inline plots
+        """
+        self.mpl_backend = mode
 
 config = Config()
 
@@ -232,7 +265,7 @@ class RandomTiling:
         if self.__closed == False:
             if self.__type<0:
                 print('Not available for hd-mode.')
-            elif type(self.__M == None):
+            elif type(self.__M)== None:
                 print('Random tiling needs to be shuffeld first!')
             else:
                 return self.__M.copy()

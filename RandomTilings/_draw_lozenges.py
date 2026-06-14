@@ -1,5 +1,5 @@
 from matplotlib.collections import LineCollection,PolyCollection
-from numba import jit
+from numba import njit
 import matplotlib.pyplot as plt
 import numpy as np
 import re
@@ -114,7 +114,7 @@ def draw_lozenges(n,M,gap,a,b,c,skewed_grid,edge,paths,dots,coloring,show_gap,dp
         plt.show()
     return fig
 
-@jit()
+@njit("(int64, int64)",cache=True)
 def type_of_lozenge(x,y):
     # 'path up'
     if x%2 == 1 and y%2 == 0:
@@ -126,7 +126,7 @@ def type_of_lozenge(x,y):
     else:
         return 3
 
-@jit()
+@njit("(int64, int64, int64, int64, int64)",cache=True)
 def in_hexagon(x,y,A,B,C):
     if x <= 2*min(B,C):
         return y >= 1 and y <= 2*A+x-1
@@ -139,7 +139,7 @@ def in_hexagon(x,y,A,B,C):
     else:
         return False
 
-@jit()
+@njit("(int64, int64, bool)",cache=True)
 def points_path(x,y,skewed_grid):
     type_loz = type_of_lozenge(x,y)
     if type_loz == 1:
@@ -159,7 +159,7 @@ def points_path(x,y,skewed_grid):
         Y = np.array([0,0])
     return X, Y
 
-@jit()
+@njit("(int64, int64, bool)",cache=True)
 def points_lozenge(x,y,skewed_grid):
     type_loz = type_of_lozenge(x,y)
     if type_loz == 1:
@@ -182,7 +182,7 @@ def points_lozenge(x,y,skewed_grid):
             Y = y+np.array([-1-(x-2)//2,1-x//2,1-(x+2)//2,-1-x//2])
     return X, Y
 
-@jit("(Array(int8, 2, 'C', False, aligned=True), int64, int64, int64, boolean, boolean)")
+@njit("(Array(int8, 2, 'C', False, aligned=True), int64, int64, int64, boolean, boolean)",cache=True)
 def compute_points(M,A,B,C,skewed_grid,paths):
     N = M.shape[0]
     P1 = [[(0,0),(0,0)]]
@@ -204,7 +204,7 @@ def compute_points(M,A,B,C,skewed_grid,paths):
                     P3 += [list(zip(X,Y))]
     return P1[1:],P2[1:],P3[1:]
 
-@jit("(Array(int8, 2, 'C', False, aligned=True), int64, int64, int64, boolean)")
+@njit("(Array(int8, 2, 'C', False, aligned=True), int64, int64, int64, boolean)",cache=True)
 def compute_points_dots(M,A,B,C,skewed_grid):
     N = M.shape[0]
     P1 = [[0,0]]

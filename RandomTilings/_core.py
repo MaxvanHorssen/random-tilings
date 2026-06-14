@@ -3,7 +3,7 @@ from numpy.random import random
 from numba import njit
 from tqdm import tqdm
 import os
-@njit("(Array(int8, 2, 'C', False, aligned=True), int64, int64, int64)")
+@njit("(Array(int8, 2, 'C', False, aligned=True), int64, int64, int64)",cache=True)
 def no_neighbor(M,k,m,n):
     N = M.shape[0]
     A = N//2-1-k  
@@ -34,7 +34,7 @@ def no_neighbor(M,k,m,n):
     return tmp_s and tmp_e and tmp_w and tmp_n
 
 
-@njit("(float64, float64, float64, float64, int32, int32, int32, int32)")
+@njit("(float64, float64, float64, float64, int32, int32, int32, int32)",cache=True)
 def update(w,x,y,z,ew,ex,ey,ez):
     overflow = False
     if w==0:
@@ -101,7 +101,7 @@ def update(w,x,y,z,ew,ex,ey,ez):
         else:
             return z/tmp, y/tmp, x/tmp, w/tmp, ez-Ixy,ey-Ixy,ex-Ixy,ew-Ixy,overflow
 
-@njit("(float64, float64, float64, float64, int32, int32, int32, int32)")
+@njit("(float64, float64, float64, float64, int32, int32, int32, int32)",cache=True)
 def comp_prop(w,x,y,z,ew,ex,ey,ez):
     Ixy = ex+ey
     Iwz = ew+ez
@@ -115,7 +115,7 @@ def comp_prop(w,x,y,z,ew,ex,ey,ez):
     else:
         return w*z/(w*z+x*y),False
 
-@njit("(Array(float64, 2, 'C', False, aligned=True),)")
+@njit("(Array(float64, 2, 'C', False, aligned=True),)",cache=True)
 def reduce_weight(W):
     K = W.shape[0] // 2
     C = W.copy()+ (W==0)
@@ -134,7 +134,7 @@ def reduce_weight(W):
                 overflow = overflow or of
     return C,E,overflow
 
-@njit("(Array(float64, 2, 'C', False, aligned=True),Array(int32, 2, 'C', False, aligned=True))")
+@njit("(Array(float64, 2, 'C', False, aligned=True),Array(int32, 2, 'C', False, aligned=True))",cache=True)
 def shuffling(C0,E0):
     C = C0.copy()
     E = E0.copy()
@@ -200,7 +200,7 @@ def shuffling(C0,E0):
 # Hard Drive Mode
 ######################################################################################
 
-@njit("(Array(int8, 2, 'C'),int64,Array(float64, 2, 'C'),int64)")
+@njit("(Array(int8, 2, 'C'),int64,Array(float64, 2, 'C'),int64)",cache=True)
 def shuffling_helper(M,A,C,k):
     # destruction + flip
     for m in range(k+1):
@@ -254,7 +254,7 @@ def shuffling_hd(N):
 
 
 
-@njit("(float64, float64, float64, float64)")
+@njit("(float64, float64, float64, float64)",cache=True)
 def red_cases_tmp(w,x,y,z): 
     if w == 0:
         tmp_w = 0
@@ -274,7 +274,7 @@ def red_cases_tmp(w,x,y,z):
 
 
 
-@njit("(float64, float64, float64, float64)")
+@njit("(float64, float64, float64, float64)",cache=True)
 def red_cases(w,x,y,z):
     if w+x+y+z == 0:
         return 1/2**0.5,1/2**0.5,1/2**0.5,1/2**0.5
@@ -294,7 +294,7 @@ def red_cases(w,x,y,z):
         return tmp_z, tmp_y, tmp_x, tmp_w
 
 
-@njit(["(Array(float64, 2, 'C', False, aligned=True),)","(Array(float64, 2, 'A', False, aligned=True),)"])
+@njit(["(Array(float64, 2, 'C', False, aligned=True),)","(Array(float64, 2, 'A', False, aligned=True),)"],cache=True)
 def reduction(W):
     N = W.shape[0]
     W_red = zeros((N,N))
