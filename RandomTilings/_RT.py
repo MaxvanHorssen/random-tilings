@@ -139,23 +139,25 @@ class RandomTiling:
         
         Inputs:
         ---------
-         - edge        : float (default = 0.); draws edges around the tiles with width 'edge'.
+         - edge        : float (default = 0); draws edges around the tiles with width 'edge'.
                          Alternative it can be set to 'ede scaling', to set the edge width in
                          comparison to the plot size.
-         - paths       : bool (default = False); if True the random paths associated to the
-                         random tiling will be displayed.
-         - dots        : bool (default = False); if True and paths = True, then the particles
-                         of associated determinental point process will be displayed.
-         - coloring    : str or rgb colors, options are 'standard', 'alternative' and 'gray'.
-                         For the aztec diamond, we also have the option 'aztec gray'.
+         - paths       : float (default = 0); if bigger than 0, then the random paths associated
+                         to the random tiling will be displayed. The linewidth  corresponds to 
+                         the value of "paths".
+         - dots        : float (default = 0); if bigger tah 0 and "paths">0, then the particles
+                         of associated determinental point process will be displayed. The size
+                         of the dots is regulated by the value of "dots".
+         - coloring    : str or rgb colors, options are 'standard', 'alternative', 'tropical'
+                         and 'gray'. For the aztec diamond, we also have the option 'aztec gray'.
          - dpi         : integer (default = 100); resolution of the created plot. 
-         - show_gap    : bool (default = False); if True, then the gap will be visualized, if
-                         a gap was used.
-         - show_figure : bool (default = False); if True, then it calls the comand plt.show().
+         - show_gap    : float (default = 0); if bigger than 0, then the gap will be visualized,
+                         if a gap was used. The thickness of the visualizting line is given by
+                         the numerical value of "show_gap".
 
          Special:
          ---------
-          - For Aztec the option 'rotated' (default = True), which rotates the picture by 45 degree.
+          - For Aztec the option 'orientation' (default = 'diamond'), alternative value 'square'.
           - For Hexagon the option 'skewed_grid' (default = False), which uses a skewed grid.
         '''
         if self.__closed == False:
@@ -237,10 +239,8 @@ def Aztec(n,w,gap=False,hard_drive_mode=False):
     else:
         desc+= 'gap = False'
 
-    def draw_Aztec(M,edge=0,paths=False,dots=False,rotated=True,coloring='standard',
-                   show_gap=False,dpi=100,show_figure=False):
-        edge = str(edge)
-        return draw_dominos(M,gap,edge,paths,dots,rotated,coloring,show_gap,dpi,show_figure)
+    def draw_Aztec(M,**kwargs):
+        return draw_dominos(M,gap = gap,**kwargs)
 
     w = w.astype(float)
     w = ascontiguousarray(w)
