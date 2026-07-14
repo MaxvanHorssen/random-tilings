@@ -1,7 +1,8 @@
+from numpy import zeros,array,int8,float64,ndarray,arange
 from matplotlib.collections import PolyCollection, LineCollection
+from matplotlib.pyplot import subplots
 from numba import njit
-import matplotlib.pyplot as plt
-import numpy as np
+
 from ._draw_aux import _set_color
 
 @njit("(Array(int8, 2, 'C', False, aligned=True),boolean,boolean,boolean)",cache=True)
@@ -9,54 +10,52 @@ def compute_domino_data(M,diamond,ac_gray,paths):
     N = M.shape[0]
     n = N//2
     if paths:
-        P = np.zeros((n*(n+1),2,2))
+        P = zeros((n*(n+1),2,2))
     else:
-        P = np.zeros((n*(n+1),4,2))
-    C = np.zeros(n*(n+1),dtype=np.int8)
+        P = zeros((n*(n+1),4,2))
+    C = zeros(n*(n+1),dtype=   int8)
     k = 0
 
     if diamond:
         if paths : 
-            A0 = np.array([[0.,0.],
-                           [0.,0.]])
-            A1 = np.array([[-0.5,0.5],
-                           [0.5,-0.5]]) # diagonal down
-            A2 = np.array([[-1.,0.],
-                           [1.,-0.]])  # horizontal
-            A3 = np.array([[-0.5,-0.5],
-                           [0.5,0.5]]) # diagonal up
+            A0 = array([[ 0. , 0. ],
+                        [ 0. , 0. ]])
+            A1 = array([[-0.5, 0.5],
+                        [ 0.5,-0.5]]) # diagonal down
+            A2 = array([[-1. , 0. ],
+                        [ 1. ,-0. ]])  # horizontal
+            A3 = array([[-0.5,-0.5],
+                        [ 0.5, 0.5]]) # diagonal up
         else:
-            A0 = np.array([[1,0.5],
-                           [1,-0.5],
-                           [-1,-0.5],
-                           [-1,0.5]])
-
-            A1 = np.array([[0.5,1],
-                           [-0.5,1],
-                           [-0.5,-1],
-                           [0.5,-1]])
-            
+            A0 = array([[ 1., 0.5],
+                        [ 1.,-0.5],
+                        [-1.,-0.5],
+                        [-1., 0.5]])
+            A1 = array([[ 0.5, 1.],
+                        [-0.5, 1.],
+                        [-0.5,-1.],
+                        [ 0.5,-1.]])
             A2 = A0
             A3 = A1
     else:
         if paths:
-            A0 = np.array([[0.,0.],
-                           [0.,0.]])  # nothing
-            A1 = np.array([[0.,1.],
-                           [0.,-1.]]) # vertical
-            A2 = np.array([[-1.,1.],
-                           [1.,-1.]]) # diagonal
-            A3 = np.array([[-1.,0.],
-                           [1,0.]])   # horizontal
+            A0 = array([[ 0., 0.],
+                        [ 0., 0.]])  # nothing
+            A1 = array([[ 0., 1.],
+                        [ 0.,-1.]]) # vertical
+            A2 = array([[-1., 1.],
+                        [ 1.,-1.]]) # diagonal
+            A3 = array([[-1., 0.],
+                        [ 1., 0.]])   # horizontal
         else:
-            A0 = np.array([[-1.5,0.5],
-                           [-0.5,1.5],
-                           [1.5,-0.5],
-                           [0.5,-1.5]])
-            A1 = np.array([[-1.5,-0.5],
-                           [0.5,1.5],
-                           [1.5,0.5],
-                           [-0.5,-1.5]])
+            A0 = array([[-1.5, 0.5],
+                        [-0.5, 1.5],
+                        [ 1.5,-0.5],
+                        [ 0.5,-1.5]])
+            A1 = array([[-1.5,-0.5],
+                        [ 0.5, 1.5],
+                        [ 1.5, 0.5],
+                        [-0.5,-1.5]])
             A2 = A0
             A3 = A1
 
@@ -65,9 +64,9 @@ def compute_domino_data(M,diamond,ac_gray,paths):
         for x in range(N):
             for y in range(N):
                 if diamond:
-                    c = np.array([(x+y)/2,(x-y)/2],dtype=np.float64)
+                    c = array([(x+y)/2,(x-y)/2],dtype=float64)
                 else:
-                    c = np.array([x+1,N-y],dtype=np.float64)
+                    c = array([x+1,N-y],dtype=float64)
                 if M[y,x] == 1:
                     # 'North'
                     if x%2 == 1 and y%2 == 0:
@@ -91,9 +90,9 @@ def compute_domino_data(M,diamond,ac_gray,paths):
         for x in range(N):
             for y in range(N):
                 if diamond:
-                    c = np.array([(x+y)/2,(x-y)/2],dtype=np.float64)
+                    c = array([(x+y)/2,(x-y)/2],dtype=float64)
                 else:
-                    c = np.array([x+1,N-y],dtype=np.float64)
+                    c = array([x+1,N-y],dtype=float64)
 
                 if M[y,x] == 1:
                     # 'North'
@@ -123,6 +122,7 @@ def compute_domino_data(M,diamond,ac_gray,paths):
 
 
 
+
 def draw_dominos(M,gap=False,edge=0,paths=False,dots=False,
                  orientation='diamond',coloring='standard',show_gap=False,dpi=100):
     edge =  float(edge)
@@ -133,12 +133,12 @@ def draw_dominos(M,gap=False,edge=0,paths=False,dots=False,
     # Setup
     #-----------------------------------------------------------
     # Setting matplotlib-figure layout.
-    fig, ax = plt.subplots(dpi=dpi)
+    fig, ax = subplots(dpi=dpi)
     ax.set_aspect('equal')
     ax.axis('off')
 
     # Setting color theme
-    color = _set_color(coloring,paths)
+    color = _set_color(coloring,'aztec',paths)
 
     # Normalize orientation
     orientation = orientation.lower()
@@ -151,7 +151,7 @@ def draw_dominos(M,gap=False,edge=0,paths=False,dots=False,
     diamond = orientation=='diamond'
 
     # Check for gap
-    isgap = type(gap) ==np.ndarray and gap.shape[1]==3
+    isgap = type(gap) == ndarray and gap.shape[1]==3
     
     ############################################################
     # Computing data + Plotting
@@ -163,24 +163,50 @@ def draw_dominos(M,gap=False,edge=0,paths=False,dots=False,
         ax.set_ylim(-len(M)//2-.5,len(M)//2+.5)
     elif orientation =='square':
         ax.set_xlim(-1.5,len(M)+2.5)
-        ax.set_ylim(-2.5,len(M)+1.5)
+        ax.set_ylim(-1.5,len(M)+2.5)
     else:
         print('Orientation not recognized.')
         raise
-
 
     if paths:
         if edge:
             P0,_ = compute_domino_data(M,diamond,False,False)
             ax.add_collection(PolyCollection(P0,facecolor='None',edgecolor='k',linewidth=edge))
-        if dots:
-            if diamond:
-                shift = np.array([[-0.5,0.5],[-1,0],[-0.5,-0.5]])
-                P0 = P[:,0,:]-shift[C]
+        else:
+            N = M.shape[0]
+            if diamond == False:
+                ax.add_collection(LineCollection([[(x+0.5,0.5),(x+1.5,-0.5)] for x in range(0,N,2)]
+                                                +[[(x+1.5,-0.5),(x+2.5,0.5)] for x in range(0,N,2)]
+                                                +[[(-0.5,y+1.5),(0.5,y+2.5)] for y in range(0,N,2)]
+                                                +[[(0.5,y+0.5),(-0.5,y+1.5)] for y in range(0,N,2)]
+                                                +[[(x+0.5,N+0.5),(x+1.5,N+1.5)] for x in range(0,N,2)]
+                                                +[[(x+1.5,N+1.5),(x+2.5,N+0.5)] for x in range(0,N,2)]
+                                                +[[(N+1.5,y+1.5),(N+0.5,y+2.5)] for y in range(0,N,2)]
+                                                +[[(N+0.5,y+0.5),(N+1.5,y+1.5)] for y in range(0,N,2)],
+                                                colors=(0,0,0),linewidths=0.5*paths))
             else:
-                shift = np.array([[0,1],[-1,1],[-1,0]])
-                P0 = P[:,0,:]-shift[C]
-            ax.scatter(P0[:,0],P0[:,1],color=color[C],linewidth=dots)
+                N = M.shape[0]
+                n = N//2
+                ax.add_collection(LineCollection([[[k-0.5,k],[k-0.5,k+1],[k+0.5,k+1]] for k in range(n)]+
+                                         [[[k-0.5,-k],[k-0.5,-k-1],[k+0.5,-k-1]] for k in range(n)]+
+                                         [[[N-k-0.5,k],[N-k-0.5,k+1],[N-k-1.5,k+1]] for k in range(n)]+
+                                         [[[N-k-0.5,-k],[N-k-0.5,-k-1],[N-k-1.5,-k-1]] for k in range(n)],
+                                                colors='k',linewidths=paths/2))
+
+
+        if dots:
+            I  = C>0
+            P0 = P[I]
+            C0 = C[I]
+        
+            n = M.shape[0]//2
+            ax.scatter(P0[:,0,0],P0[:,0,1],color=color[C0],linewidth=dots)
+            if diamond:
+                ax.scatter(arange(n+1,2*n+1)-0.5,arange(-n+1,1)-0.5,color=color[1],linewidth=dots)
+            else:
+                ax.scatter(arange(2,2*n+2,2),n*[0],color=color[1],linewidth=dots)
+
+
         if isgap and show_gap>0:
             points_gap_lines = []
             size_gap = gap.shape[0]
@@ -190,7 +216,6 @@ def draw_dominos(M,gap=False,edge=0,paths=False,dots=False,
                 y1 = N-x+2*gap[i1][1]-1
                 y2 = N-x+2*gap[i1][2]
                 points_gap_lines.append([[x,y1],[x,y2]])
-            print(points_gap_lines)
             ax.add_collection(LineCollection(points_gap_lines, colors='r', linewidths=show_gap))
 
 

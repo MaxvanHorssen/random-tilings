@@ -1,9 +1,9 @@
 from numpy import zeros,load,save,int8,int32
 from numpy.random import random
-from numba import njit
+from numba import njit,prange
 from tqdm import tqdm
 import os
-@njit("(Array(int8, 2, 'C', False, aligned=True), int64, int64, int64)",cache=True)
+@njit("(Array(int8, 2, 'C', False, aligned=True), int64, int64, int64)",cache=True,inline = "always")
 def no_neighbor(M,k,m,n):
     N = M.shape[0]
     A = N//2-1-k  
@@ -34,7 +34,7 @@ def no_neighbor(M,k,m,n):
     return tmp_s and tmp_e and tmp_w and tmp_n
 
 
-@njit("(float64, float64, float64, float64, int32, int32, int32, int32)",cache=True)
+@njit("(float64, float64, float64, float64, int32, int32, int32, int32)",cache=True,inline="always")
 def update(w,x,y,z,ew,ex,ey,ez):
     overflow = False
     if w==0:
@@ -101,7 +101,7 @@ def update(w,x,y,z,ew,ex,ey,ez):
         else:
             return z/tmp, y/tmp, x/tmp, w/tmp, ez-Ixy,ey-Ixy,ex-Ixy,ew-Ixy,overflow
 
-@njit("(float64, float64, float64, float64, int32, int32, int32, int32)",cache=True)
+@njit("(float64, float64, float64, float64, int32, int32, int32, int32)",cache=True,inline="always")
 def comp_prop(w,x,y,z,ew,ex,ey,ez):
     Ixy = ex+ey
     Iwz = ew+ez
@@ -115,7 +115,7 @@ def comp_prop(w,x,y,z,ew,ex,ey,ez):
     else:
         return w*z/(w*z+x*y),False
 
-@njit("(Array(float64, 2, 'C', False, aligned=True),)",cache=True)
+@njit("(Array(float64, 2, 'C', False, aligned=True),)",cache=True,parallel = True)
 def reduce_weight(W):
     K = W.shape[0] // 2
     C = W.copy()+ (W==0)
@@ -123,18 +123,85 @@ def reduce_weight(W):
     E+= 1*(W == 0) #.astype(int)
     overflow = False
     for k in range(K-1):
-        for m in range(K-k):
-            for n in range(K-k):
-                w ,x ,y ,z  = C[k+2*m,k+2*n],C[k+2*m,k+2*n+1],C[k+2*m+1,k+2*n],C[k+2*m+1,k+2*n+1]
-                ew,ex,ey,ez = E[k+2*m,k+2*n],E[k+2*m,k+2*n+1],E[k+2*m+1,k+2*n],E[k+2*m+1,k+2*n+1]
+        for m in prange(K-k):
+            for n in prange(K-k):
+                I00,I01,I10,I11 = k+2*m,k+2*n,k+2*m+1,k+2*n+1
+                w ,x ,y ,z  = C[I00,I01],C[I00,I11],C[I10,I01],C[I10,I11]
+                ew,ex,ey,ez = E[I00,I01],E[I00,I11],E[I10,I01],E[I10,I11]
                 
                 w,x,y,z,ew,ex,ey,ez,of = update(w,x,y,z,ew,ex,ey,ez)
-                C[k+2*m,k+2*n],C[k+2*m,k+2*n+1],C[k+2*m+1,k+2*n],C[k+2*m+1,k+2*n+1] = w,x,y,z
-                E[k+2*m,k+2*n],E[k+2*m,k+2*n+1],E[k+2*m+1,k+2*n],E[k+2*m+1,k+2*n+1] = ew,ex,ey,ez
+                C[I00,I01],C[I00,I11],C[I10,I01],C[I10,I11] = w,x,y,z
+                E[I00,I01],E[I00,I11],E[I10,I01],E[I10,I11] = ew,ex,ey,ez
                 overflow = overflow or of
     return C,E,overflow
 
-@njit("(Array(float64, 2, 'C', False, aligned=True),Array(int32, 2, 'C', False, aligned=True))",cache=True)
+# @njit("(Array(float64, 2, 'C', False, aligned=True),Array(int32, 2, 'C', False, aligned=True))",cache=True)
+# def shuffling(C0,E0):
+#     C = C0.copy()
+#     E = E0.copy()
+#     N = C.shape[0]
+#     M = zeros((N,N),dtype=int8)
+#     overflow = False
+
+#     # Initiate
+#     A = N//2-1
+#     w,x,y,z     = C[A,A],C[A,A+1],C[A+1,A],C[A+1,A+1]
+#     ew,ex,ey,ez = E[A,A],E[A,A+1],E[A+1,A],E[A+1,A+1]
+#     prob,of = comp_prop(w,x,y,z,ew,ex,ey,ez)
+#     overflow = overflow or of
+#     if random()<prob:
+#         M[A,A],M[A+1,A+1]= 1,1
+#         M[A,A+1],M[A+1,A]= 0,0
+#     else:
+#         M[A,A],M[A+1,A+1]= 0,0
+#         M[A,A+1],M[A+1,A]= 1,1
+
+    
+#     for k in range(1,N//2):
+#         A = N//2-1-k   
+
+#         # destruction + flip (+ reconstruct)
+#         for m in range(k+1):
+#             for n in range(k+1):
+#                 I00,I01,I10,I11 = A+2*m,A+2*n,A+2*m+1,A+2*n+1
+#                 # reconstruct
+#                 w,x,y,z     = C[I00,I01],C[I00,I11],C[I10,I01],C[I10,I11]
+#                 ew,ex,ey,ez = E[I00,I01],E[I00,I11],E[I10,I01],E[I10,I11]
+                
+#                 w,x,y,z,ew,ex,ey,ez,of = update(w,x,y,z,ew,ex,ey,ez)
+#                 overflow = overflow or of
+#                 C[I00,I01],C[I00,I11],C[I10,I01],C[I10,I11] = w,x,y,z
+#                 E[I00,I01],E[I00,I11],E[I10,I01],E[I10,I11] = ew,ex,ey,ez
+
+#                 # destruction + flip
+#                 tmp = M[I00,I01]+M[I10,I01]+M[I00,I11]+M[I10,I11]
+#                 if tmp>1:
+#                     M[I00,I01],M[I10,I01],M[I00,I11],M[I10,I11]=0,0,0,0
+#                 elif tmp == 1:
+#                     M[I00,I01],M[I10,I11]=M[I10,I11],M[I00,I01]
+#                     M[I00,I11],M[I10,I01]=M[I10,I01],M[I00,I11]
+
+#         for m in range(k+1):
+#             for n in range(k+1):
+#                 if no_neighbor(M,k,m,n):
+#                     I00,I01,I10,I11 = A+2*m,A+2*n,A+2*m+1,A+2*n+1
+#                     w,x,y,z     = C[I00,I01],C[I00,I11],C[I10,I01],C[I10,I11]
+#                     ew,ex,ey,ez = E[I00,I01],E[I00,I11],E[I10,I01],E[I10,I11]
+#                     prob,of  = comp_prop(w,x,y,z,ew,ex,ey,ez)
+#                     overflow = overflow or of
+
+#                     if random()<prob:
+#                         M[I00,I01],M[I10,I11]= 1,1
+#                         M[I00,I11],M[I10,I01]= 0,0
+#                     else:
+#                         M[I00,I01],M[I10,I11]= 0,0
+#                         M[I00,I11],M[I10,I01]= 1,1
+#     return M,overflow
+
+
+
+@njit("(Array(float64, 2, 'C', False, aligned=True),Array(int32, 2, 'C', False, aligned=True))",
+      cache=True,parallel = True)
 def shuffling(C0,E0):
     C = C0.copy()
     E = E0.copy()
@@ -162,38 +229,71 @@ def shuffling(C0,E0):
         # destruction + flip (+ reconstruct)
         for m in range(k+1):
             for n in range(k+1):
+                I00,I01,I10,I11 = A+2*m,A+2*n,A+2*m+1,A+2*n+1
                 # reconstruct
-                w,x,y,z     = C[A+2*m,A+2*n],C[A+2*m,A+2*n+1],C[A+2*m+1,A+2*n],C[A+2*m+1,A+2*n+1]
-                ew,ex,ey,ez = E[A+2*m,A+2*n],E[A+2*m,A+2*n+1],E[A+2*m+1,A+2*n],E[A+2*m+1,A+2*n+1]
+                w,x,y,z     = C[I00,I01],C[I00,I11],C[I10,I01],C[I10,I11]
+                ew,ex,ey,ez = E[I00,I01],E[I00,I11],E[I10,I01],E[I10,I11]
                 
                 w,x,y,z,ew,ex,ey,ez,of = update(w,x,y,z,ew,ex,ey,ez)
                 overflow = overflow or of
-                C[A+2*m,A+2*n],C[A+2*m,A+2*n+1],C[A+2*m+1,A+2*n],C[A+2*m+1,A+2*n+1] = w,x,y,z
-                E[A+2*m,A+2*n],E[A+2*m,A+2*n+1],E[A+2*m+1,A+2*n],E[A+2*m+1,A+2*n+1] = ew,ex,ey,ez
+                C[I00,I01],C[I00,I11],C[I10,I01],C[I10,I11] = w,x,y,z
+                E[I00,I01],E[I00,I11],E[I10,I01],E[I10,I11] = ew,ex,ey,ez
 
                 # destruction + flip
-                tmp = M[A+2*m,A+2*n]+M[A+2*m+1,A+2*n]+M[A+2*m,A+2*n+1]+M[A+2*m+1,A+2*n+1]
+                tmp = M[I00,I01]+M[I10,I01]+M[I00,I11]+M[I10,I11]
                 if tmp>1:
-                    M[A+2*m,A+2*n],M[A+2*m+1,A+2*n],M[A+2*m,A+2*n+1],M[A+2*m+1,A+2*n+1]=0,0,0,0
+                    M[I00,I01],M[I10,I01],M[I00,I11],M[I10,I11]=0,0,0,0
                 elif tmp == 1:
-                    M[A+2*m,A+2*n],M[A+2*m+1,A+2*n+1]=M[A+2*m+1,A+2*n+1],M[A+2*m,A+2*n]
-                    M[A+2*m,A+2*n+1],M[A+2*m+1,A+2*n]=M[A+2*m+1,A+2*n],M[A+2*m,A+2*n+1]
+                    M[I00,I01],M[I10,I11]=M[I10,I11],M[I00,I01]
+                    M[I00,I11],M[I10,I01]=M[I10,I01],M[I00,I11]
 
         for m in range(k+1):
             for n in range(k+1):
-                if no_neighbor(M,k,m,n):
-                    w,x,y,z     = C[A+2*m,A+2*n],C[A+2*m,A+2*n+1],C[A+2*m+1,A+2*n],C[A+2*m+1,A+2*n+1]
-                    ew,ex,ey,ez = E[A+2*m,A+2*n],E[A+2*m,A+2*n+1],E[A+2*m+1,A+2*n],E[A+2*m+1,A+2*n+1]
+                ####################
+                # Check for Neighboor
+                A = N//2-1-k  
+                I00,I01,I10,I11 = A+2*m,A+2*n,A+2*m+1,A+2*n+1
+                
+                if M[I00,I01]+M[I10,I01]+M[I00,I11]+M[I10,I11]>0:
+                    no_neighbor = False
+                else:
+                    if n==0:
+                        tmp_w = True
+                        tmp_e = (M[I00,I11+1]+M[I10,I11+1])==0
+                    elif n==k:
+                        tmp_w = (M[I00,I01-1]+M[I10,I01-1])==0
+                        tmp_e = True
+                    else:
+                        tmp_w = (M[I00,I01-1]+M[I10,I01-1])==0
+                        tmp_e = (M[I00,I11+1]+M[I10,I11+1])==0
+
+                    if m==0:
+                        tmp_n = True
+                        tmp_s = (M[I10+1,I01]+M[I10+1,I11])==0
+                    elif m==k:
+                        tmp_n = (M[I00-1,I01]+M[I00-1,I11])==0
+                        tmp_s = True
+                    else:
+                        tmp_n = (M[I00-1,I01]+M[I00-1,I11])==0
+                        tmp_s = (M[I00+1,I01]+M[I00+1,I11])==0
+                    no_neighbor = tmp_s and tmp_e and tmp_w and tmp_n
+
+                # end checking for neighboor
+
+                if no_neighbor:
+                    w,x,y,z     = C[I00,I01],C[I00,I11],C[I10,I01],C[I10,I11]
+                    ew,ex,ey,ez = E[I00,I01],E[I00,I11],E[I10,I01],E[I10,I11]
                     prob,of  = comp_prop(w,x,y,z,ew,ex,ey,ez)
                     overflow = overflow or of
 
                     if random()<prob:
-                        M[A+2*m,A+2*n],M[A+2*m+1,A+2*n+1]= 1,1
-                        M[A+2*m,A+2*n+1],M[A+2*m+1,A+2*n]= 0,0
+                        M[I00,I01],M[I10,I11]= 1,1
+                        M[I00,I11],M[I10,I01]= 0,0
                     else:
-                        M[A+2*m,A+2*n],M[A+2*m+1,A+2*n+1]= 0,0
-                        M[A+2*m,A+2*n+1],M[A+2*m+1,A+2*n]= 1,1
+                        M[I00,I01],M[I10,I11]= 0,0
+                        M[I00,I11],M[I10,I01]= 1,1
     return M,overflow
+
 
 
 ######################################################################################

@@ -328,9 +328,9 @@ def Hexagon(n,w,a=1,b=1,c=1,gap=False,hard_drive_mode=False):
     
 
     def draw_Hexagon(M,skewed_grid=False,edge=0,paths=False,dots=False,coloring='standard',
-                     show_gap=False,dpi=100,show_figure=False):
+                     show_gap=False,dpi=100):
         edge = str(edge)
-        fig = draw_lozenges(n,M,gap,a,b,c,skewed_grid,edge,paths,dots,coloring,show_gap,dpi,show_figure)
+        fig = draw_lozenges(n,M,gap,a,b,c,skewed_grid,edge,paths,dots,coloring,show_gap,dpi)
         return fig
     w = w.astype(float)
     w = ascontiguousarray(w)

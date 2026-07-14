@@ -1,5 +1,6 @@
+from numpy import round, zeros
 from numba import njit
-import numpy as np
+
 
 @njit(["(int64, int64, Array(float64, 2, 'C', False, aligned=True))",
  "(int64, int64, Array(int64, 2, 'C', False, aligned=True))"],cache=True)
@@ -47,12 +48,12 @@ def isinUpRightCorner(x3,y3,A,B,C):
 
 @njit("(int64, Array(float64, 2, 'C', False, aligned=True), int64, float64, float64)",cache=True)
 def weight_hexagon(n,w,a,b,c):
-    A = int(np.round(a*n))
-    B = int(np.round(b*n))
-    C = int(np.round(c*n))
+    A = int(round(a*n))
+    B = int(round(b*n))
+    C = int(round(c*n))
     N = 2*(A+B+C-1)
 
-    W = np.zeros((N,N))
+    W = zeros((N,N))
     Lp_space,Lp_time = w.shape[0],w.shape[1]
 
     for x in range(1,N+1):

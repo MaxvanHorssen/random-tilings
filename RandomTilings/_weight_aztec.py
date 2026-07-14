@@ -1,10 +1,10 @@
-import numpy as np
-from numba import jit
+from numpy import zeros
+from numba import njit
 
-@jit("(int64, Array(float64, 2, 'C', False, aligned=True))",cache=True)
+@njit("(int64, Array(float64, 2, 'C', False, aligned=True))",cache=True)
 def weight_aztec(n,w):
     N = 2*n
-    W = np.zeros((N,N))
+    W = zeros((N,N))
     end = N
     y_period,x_period = w.shape[0],w.shape[1]
 
