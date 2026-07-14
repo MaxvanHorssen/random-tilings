@@ -11,18 +11,12 @@ allowing us to make this package publicly available.
 </p>
 
 # Important Notes
-A documentation for the the routines provided by `RandomTilings` can be found in the pdf `Documentation for RandomTilings`. 
-In the current version, not all options from `MatlabTilings` have been implemented in the Python
-package. Therefore, `Documentation for RandomTilings` mainly discusses the necessary changes important for
-the Python package. Some parts of the [`Help file`](https://sites.google.com/view/cchar/random-tilings)  for `MatlabTilings` are copied for context. For a
-more complete description, the reader should consult the [`Help file`](https://sites.google.com/view/cchar/random-tilings); please keep in mind that only some
-features are available in the Python package.
+A documentation for the the routines provided by `RandomTilings` can be found in the pdf `Documentation for RandomTilings`. In the current version, not all options from `MatlabTilings` have been implemented in the Python package. Therefore, `Documentation for RandomTilings` mainly discusses the necessary changes important for the Python package. Some parts of the [`Help file`](https://sites.google.com/view/cchar/random-tilings)  for `MatlabTilings` are copied for context. For a more complete description, the reader should consult the [`Help file`](https://sites.google.com/view/cchar/random-tilings); please keep in mind that only some features are available in the Python package.
 
 Some examples using the routines from the Python package can be found in the Jupyter notebook [`Examples - How to use`](https://github.com/MaxvanHorssen/random-tilings/blob/main/Examples%20-%20How%20to%20use.ipynb) or in the `How to use` section below.
 
 **The Power of Numba**      
-The creation of these random tilings is numerically expensive. In order to drastically improve the performance, this package makes heavy use of the `Numba` compiler `jit`.
-Therefore, installation of `Numba` is required to be able to run the package. Note that importing `RandomTilings` might take some time, as all subroutines have to be compiled.
+The creation of these random tilings is numerically expensive. In order to drastically improve the performance, this package makes heavy use of the `Numba` compiler `jit`. Therefore, installation of `Numba` is required to be able to run the package. Note that importing `RandomTilings` might take some time, as all subroutines have to be compiled.
 
 # Acknowledgments
 We would like to express our sincere gratitude to Christophe Charlier for providing the original Matlab implementation and for giving us permission to release this Python adaptation of his program.
