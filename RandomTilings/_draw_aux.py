@@ -46,6 +46,7 @@ def _rgb_wrapper(coloring):
         if    min(C)<0 or    max(C)>1:
             print('Float point RGB colors needs to be between 0 and 1.')
             raise
+        return C
     else:
         if    min(C)<0 or    max(C)>255:
             print('Integer RGB colors need to be between 0 and 255.')
