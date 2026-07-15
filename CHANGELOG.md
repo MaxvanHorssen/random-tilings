@@ -18,7 +18,7 @@ Version 1.0.0 is the first official release of `RandomTilings`. It introduces a 
 * Added an object-oriented interface for constructing random-tiling models.
 * Added the ability to generate multiple random tilings from the same model without reconstructing it.
 * Added separate `shuffle()` and `plot()` methods for sampling and displaying tilings.
-* Added access to the corresponding Matplotlib figure through the `fig` attribute.
+* Added access to the corresponding `Matplotlib` figure through the `fig` attribute.
 * Added a `close()` method for closing a model and releasing its resources.
 * Added additional options for modifying the appearance of generated plots.
 
