@@ -231,6 +231,10 @@ def Aztec(n,w,gap=False,hard_drive_mode=False):
     finished creating all wanted plots. After closing no new plots can be created.
     '''
 
+    w  = array(w)
+    if gap:
+        gap = array(gap)
+
     desc  = 'Aztec Diamond\n'
     desc += 'n   = '+ str(n)+'\n'
     desc += 'w   = '+array2string(w, precision=2, suppress_small=True).replace('\n','\n'+6*' ')+'\n'
@@ -242,7 +246,6 @@ def Aztec(n,w,gap=False,hard_drive_mode=False):
     def draw_Aztec(M,**kwargs):
         return draw_dominos(M,gap = gap,**kwargs)
 
-    w  = array(w)
     w  = w.astype(complex)
     w1 = w.real
     w2 = w.imag 
@@ -321,6 +324,9 @@ def Hexagon(n,w,a=1,b=1,c=1,gap=False,hard_drive_mode=False):
     memory again. This is important when working with large tiles. Only close the tiling once you are 
     finished creating all wanted plots. After closing no new plots can be created.
     '''
+    w  = array(w)
+    if gap:
+        gap = array(gap)
     
     desc  = 'Hexagon Tiling\n'
     desc += 'n   = '+str(n)+', a = '+ str(a)+', b = '+str(b)+', c = '+str(c)+ '\n'
@@ -337,7 +343,6 @@ def Hexagon(n,w,a=1,b=1,c=1,gap=False,hard_drive_mode=False):
         edge = str(edge)
         fig = draw_lozenges(n,M,gap,a,b,c,skewed_grid,edge,paths,dots,coloring,show_gap,dpi)
         return fig
-    w = array(w) 
     w = w.astype(complex)
     w = ascontiguousarray(w)
     W = weight_hexagon(n,w,a,b,c)
