@@ -9,7 +9,7 @@ This project provides the Python package `RandomTilings`, which makes it possibl
 </p>
 
 ## The New Version
-Version 2 introduces a new optimized implementation of the core algorithms. The main improvement is a reduction in memory complexity from cubic to quadratic, resulting in significantly better memory efficiency and improved runtime performance. Overall, Version 2 is roughly 25 times faster and it can handle bigger tilings. In addition, the structure of the main object has changed: instead of using a single function call to generate a plot, Version 2 follows an object-oriented design. This makes it possible to adjust plot settings or create new instances of a random tiling without recomputing everything from scratch. The previous implementation remains available in the GitHub branch `version-1`, but future development and support will focus on Version 2.
+The new version introduces an optimized implementation of the core algorithms. The main improvement is a reduction in memory complexity from cubic to quadratic, resulting in significantly better memory efficiency and improved runtime performance. In addition, the structure of the main object has changed: instead of using a single function call to generate a plot, the new version follows an object-oriented design. This makes it possible to adjust plot settings or create new instances of a random tiling without recomputing everything from scratch. The previous implementation remains available in the GitHub branch `version-0`, but future development and support will focus on the main branch.
 
 ## Documentation
 
