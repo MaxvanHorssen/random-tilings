@@ -36,7 +36,7 @@ Therefore, make sure that these libraries are installed beforehand. Once the ins
 ```python
  import RandomTilings as RT
 ```
-Note that by importing all necessary subroutines will be compiled by `Numba.njit`, therefore the first time importing this libbrary might take some time.
+Note that by importing all necessary subroutines will be compiled by `Numba.njit`, therefore the first time importing this library might take some time.
 
 ## Example - How to use
 Using `RandomTilings`, we can generate random tilings of both the Aztec diamond and the hexagon. The workflow is the same in both cases.
