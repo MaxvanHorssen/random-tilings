@@ -1,9 +1,10 @@
-from numpy import round, zeros
+from numpy import round, zeros, complex128
 from numba import njit
 
 
 @njit(["(int64, int64, Array(float64, 2, 'C', False, aligned=True))",
- "(int64, int64, Array(int64, 2, 'C', False, aligned=True))"],cache=True)
+ "(int64, int64, Array(int64, 2, 'C', False, aligned=True))",
+ "(int64, int64, Array(complex128, 2, 'C', False, aligned=True))"],cache=True)
 def is_there_no_neighbour(x,y,W):
     N = W.shape[0]
     x_ind = N-(y-1)
@@ -46,14 +47,14 @@ def isinhexagon(x2,y2,A,B,C):
 def isinUpRightCorner(x3,y3,A,B,C):
     return (x3 >= 2*(B+C) and y3 >= 2*(A+C))
 
-@njit("(int64, Array(float64, 2, 'C', False, aligned=True), int64, float64, float64)",cache=True)
+@njit("(int64, Array(complex128, 2, 'C', False, aligned=True), int64, float64, float64)",cache=True)
 def weight_hexagon(n,w,a,b,c):
     A = int(round(a*n))
     B = int(round(b*n))
     C = int(round(c*n))
     N = 2*(A+B+C-1)
 
-    W = zeros((N,N))
+    W = zeros((N,N),dtype=complex128)
     Lp_space,Lp_time = w.shape[0],w.shape[1]
 
     for x in range(1,N+1):

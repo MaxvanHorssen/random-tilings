@@ -156,8 +156,8 @@ def draw_lozenges(n,M,gap=False,a=1,b=1,c=1,skewed_grid=False,edge=False,
         ax.add_collection(LineCollection(P0,colors=color[L0],linewidths=paths,zorder=1))
 
         if dots:
-            ax.scatter(P0[:,0,0],P0[:,0,1],c= color[L0],s=dots,zorder=2)
-            ax.scatter(P0[:,1,0],P0[:,1,1],c= color[L0],s=dots,zorder=2)
+            ax.scatter(P0[:,0,0],P0[:,0,1],c= color[L0],s=10*dots,zorder=2)
+            ax.scatter(P0[:,1,0],P0[:,1,1],c= color[L0],s=10*dots,zorder=2)
 
         if show_gap:
             points_gap_lines = []

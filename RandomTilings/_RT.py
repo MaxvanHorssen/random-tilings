@@ -3,7 +3,7 @@ from ._weight_hexagon import weight_hexagon
 from ._core import reduce_weight,reduce_weight_hd,clear_CTower,shuffling,shuffling_hd
 from ._draw_dominos import draw_dominos
 from ._draw_lozenges import draw_lozenges
-from numpy import round,array2string,ndarray,round,ascontiguousarray
+from numpy import round,array2string,ndarray,round,ascontiguousarray,int32
 
 
 
@@ -242,9 +242,13 @@ def Aztec(n,w,gap=False,hard_drive_mode=False):
     def draw_Aztec(M,**kwargs):
         return draw_dominos(M,gap = gap,**kwargs)
 
-    w = w.astype(float)
-    w = ascontiguousarray(w)
-    W = weight_aztec(n,w)
+    w  = w.astype(complex)
+    w1 = w.real
+    w2 = w.imag 
+    w1 = ascontiguousarray(w1)
+    w2 = ascontiguousarray(w2)
+    W  = weight_aztec(n,w1)
+    E  = weight_aztec(n,w2).astype(int32)
     if type(gap)==ndarray:
         N = 2*n
         end = N
@@ -277,7 +281,7 @@ def Aztec(n,w,gap=False,hard_drive_mode=False):
         E = None
     else:
         _type = 0
-        C,E,of = reduce_weight(W)
+        C,E,of = reduce_weight(W,E)
         if of and config.warnings:
             print('Numerical instability detected: Overflow/Underflow!')
     
@@ -332,9 +336,11 @@ def Hexagon(n,w,a=1,b=1,c=1,gap=False,hard_drive_mode=False):
         edge = str(edge)
         fig = draw_lozenges(n,M,gap,a,b,c,skewed_grid,edge,paths,dots,coloring,show_gap,dpi)
         return fig
-    w = w.astype(float)
+    w  = w.astype(complex)
     w = ascontiguousarray(w)
-    W = weight_hexagon(n,w,a,b,c)
+    W  = weight_hexagon(n,w,a,b,c)
+
+
     if type(gap)==ndarray:
         A = int(round(a*n))
         B = int(round(b*n))
@@ -364,7 +370,9 @@ def Hexagon(n,w,a=1,b=1,c=1,gap=False,hard_drive_mode=False):
         E = None
     else:
         _type = 0
-        C,E,of = reduce_weight(W)
+        E = ascontiguousarray(W.imag).astype(int32)
+        W = ascontiguousarray(W.real)
+        C,E,of = reduce_weight(W,E)
         if of and config.warnings:
             print('Numerical instability detected: Overflow/Underflow!')
 

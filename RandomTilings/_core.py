@@ -115,11 +115,10 @@ def comp_prop(w,x,y,z,ew,ex,ey,ez):
     else:
         return w*z/(w*z+x*y),False
 
-@njit("(Array(float64, 2, 'C', False, aligned=True),)",cache=True,parallel = True)
-def reduce_weight(W):
+@njit("(Array(float64, 2, 'C', False, aligned=True),Array(int32, 2, 'C', False, aligned=True))",cache=True,parallel = True)
+def reduce_weight(W,E):
     K = W.shape[0] // 2
     C = W.copy()+ (W==0)
-    E = zeros((2*K,2*K),dtype=int32)
     E+= 1*(W == 0) #.astype(int)
     overflow = False
     for k in range(K-1):
