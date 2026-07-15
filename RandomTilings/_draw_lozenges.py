@@ -3,7 +3,6 @@ from matplotlib.collections import LineCollection,PolyCollection
 from ._draw_aux import _set_color
 from numba import njit
 from matplotlib.pyplot import subplots
-import re
 
 @njit("(int64, int64, int64, int64, int64)",cache=True)
 def in_hexagon(x,y,A,B,C):

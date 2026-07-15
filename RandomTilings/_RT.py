@@ -205,7 +205,7 @@ class RandomTiling:
 # Aztec
 #################################
 
-def Aztec(n,w,gap=False,hard_drive_mode=False):
+def Aztec(n,w=[[1]],gap=False,hard_drive_mode=False):
     '''Creates a random aztec diamond.
     Input:
     ---------
@@ -298,7 +298,7 @@ def Aztec(n,w,gap=False,hard_drive_mode=False):
 #################################
 
 
-def Hexagon(n,w,a=1,b=1,c=1,gap=False,hard_drive_mode=False):
+def Hexagon(n,w=[[1],[1]],a=1,b=1,c=1,gap=False,hard_drive_mode=False):
     '''Creates a random hexagon tiling.
     Input:
     ---------
