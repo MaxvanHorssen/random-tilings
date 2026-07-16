@@ -167,7 +167,7 @@ def draw_lozenges(M,A,B,C,gap=False,color_scheme='standard',dot_width=0,dpi=100,
                     y2 = int(2*gap[i1][2])
                 points_gap_lines.append([[x,y1],[x,y2]])
             ax.add_collection(LineCollection(points_gap_lines,colors='r',linewidths=gap_width))
-        ax.add_collection(LineCollection(P,colors=color[L],linewidths=path_width,zorder=1)) # BREAKS
+        ax.add_collection(LineCollection(P,colors=color[L],linewidths=path_width,zorder=1))
     else:
         ax.add_collection(PolyCollection(P,facecolor=color[L],edgecolor='k',linewidth=edge_width))
     return fig
