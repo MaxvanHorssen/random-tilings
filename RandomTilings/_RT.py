@@ -3,18 +3,18 @@ from ._weight_hexagon import weight_hexagon
 from ._core import reduce_weight,shuffling
 from ._draw_dominos import draw_dominos
 from ._draw_lozenges import draw_lozenges
-from numpy import round,array2string,ndarray,round,ascontiguousarray,int32,array
+from numpy import round,array2string,ndarray,ascontiguousarray,int32,array
     
 class Config:
-    '''Configuration object for specifying and overviewing global settings.
+    '''Configuration object for specifying global settings.
     
     Overview:
     ---------
      - warnings     : Enables or disables printed warnings.
-     - mpl_backend  : Sets the backend for displaying the matplotlib plots. Options: 
+     - mpl_backend  : Sets the backend for displaying Matplotlib plots. Options: 
                       "inline" (default) and "interactive".'''
     warnings     = True
-    mpl_backend  = 'Inline'
+    mpl_backend  = 'inline'
 
     def __setattr__(self, name, value):
         if name == 'used_storage':
@@ -97,7 +97,7 @@ class RandomTiling:
             if of and config.warnings:
                 print('Numerical instability detected: Overflow/Underflow!')
         else:
-            print('This random riling is already closed.')
+            print('This random tiling is already closed.')
 
     def plot(self,**args):
         '''This routine creates a figure containing the plot of the sampled random tiling.
@@ -116,10 +116,10 @@ class RandomTiling:
          
          Hexagon specific:
          - color_scheme is the color scheme of the figure. Three built-in options are available: "standard", "alternative", and "gray". Custom color schemes are specified as [(r,g,b),(r,g,b),(r,g,b)], where the three RGB triples correspond to the colors of the left, right, horizontal lozenges, respectively. Each color component r, g, and b may be given either as an integer in {0,...,255} or as a real number in [0,1]. By default, color_scheme = "standard".
-         - "shape" (only for Hexagon) gives the shape of the figure, for which two options are available: "regular" and "skewed". By default, shape = "regular".'''
+         - "shape" gives the shape of the figure, for which two options are available: "regular" and "skewed". By default, shape = "regular".'''
         if self.__closed == False:
             if type(self.__M) == type(None):
-                print('The Random tiling needs to be shuffeld first!')
+                print('The Random tiling needs to be shuffled first!')
             else:
                 self.fig = self.__plot(self.__M,**args)
         else:
@@ -137,8 +137,8 @@ class RandomTiling:
     
     def get_M(self):
         if self.__closed == False:
-            if type(self.__M)== None:
-                print('Random tiling needs to be shuffeld first!')
+            if type(self.__M) == type(None):
+                print('Random tiling needs to be shuffled first!')
             else:
                 return self.__M.copy()
         else:
@@ -158,7 +158,7 @@ def Aztec(n,w=[[1]],gap=False):
     
     Input:
     ------
-    "w" is the weighting on the edge graph, which can be a matrix of any size. We adopt the convention that the weightings is assigned on the bottom left corner of the Aztec diamond, and is then periodically extended to the full Aztec diamond. By default, the uniform weighting is used, i.e., w = [[1]].
+    "w" is the weighting on the edge graph, which can be a matrix of any size. We adopt the convention that the weighting is assigned on the bottom left corner of the Aztec diamond, and is then periodically extended to the full Aztec diamond. By default, the uniform weighting is used, i.e., w = [[1]].
     "gap" must be of the form [[t1,x1,y1],[t2,x2,y2],...,[tm,xm,ym]], which means that at each time tj, there is a vertical gap from xj to yj. The points must satisfy tj in {0,1,...,2n} and xj,yj must be integers. It is allowed to take xj = yj, which represents a single point xj.         
     
     Output:
@@ -229,8 +229,8 @@ def Hexagon(n,w=[[1],[1]],a=1,b=1,c=1,gap=False):
     
     Input:
     ------
-     "w" is the weighting on the edge graph, which can be a matrix of any size. For a pxq periodic weightings, w must be a matrix of size 2pxq. We adopt the convention that the weightings is assigned on the bottom left corner of the hexagon, and is then periodically extended to the full hexagon. By default, the uniform weighting is used, i.e., w = [[1],[1]].
-     "a", "b", and "c" are the side length multipliers, i.e, the hexagon will be of size (an)x(bn)x(cn). By default, a = b = c = 1.
+     "w" is the weighting on the edge graph, which can be a matrix of any size. For a pxq periodic weighting, w must be a matrix of size 2pxq. We adopt the convention that the weighting is assigned on the bottom left corner of the hexagon, and is then periodically extended to the full hexagon. By default, the uniform weighting is used, i.e., w = [[1],[1]].
+     "a", "b", and "c" are the side length multipliers, i.e., the hexagon will be of size (an)x(bn)x(cn). By default, a = b = c = 1.
      "gap" must be of the form [[t1,x1,y1],[t2,x2,y2],...,[tm,xm,ym]], which means that at each time tj, there is a vertical gap from xj to yj. The points must satisfy tj in {0,1,...,2n} and xj,yj must be half-integers. It is allowed to take xj = yj, which represents a single point xj.
 
     Output:
