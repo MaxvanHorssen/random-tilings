@@ -1,6 +1,34 @@
-from RandomTilingsV1.is_there_no_neighbour import is_there_no_neighbour
+from numpy import round, zeros, complex128
 from numba import njit
-import numpy as np
+
+
+@njit(["(int64, int64, Array(float64, 2, 'C', False, aligned=True))",
+ "(int64, int64, Array(int64, 2, 'C', False, aligned=True))",
+ "(int64, int64, Array(complex128, 2, 'C', False, aligned=True))"],cache=True)
+def is_there_no_neighbour(x,y,W):
+    N = W.shape[0]
+    x_ind = N-(y-1)
+    if x == 1:
+        if y == 1:
+            return True
+        else:
+            return W[x_ind,x-1] == 0
+    else:
+        if y == 1:
+            if ((x+y)%2) == 1:
+                return W[x_ind-1,x-2] == 0
+            else:
+                return W[x_ind-1,x-2] == 0 and W[x_ind-2,x-2] == 0
+        elif y == N:
+            if ((x+y)%2) == 1:
+                return W[x_ind-1,x-2] == 0 and W[x_ind,x-2] == 0 and W[x_ind,x-1] == 0
+            else:
+                return W[x_ind-1,x-2] == 0 and W[x_ind,x-1] == 0
+        else:
+            if ((x+y)%2)==1:
+                return W[x_ind-1,x-2] == 0 and W[x_ind,x-2] == 0 and W[x_ind,x-1] == 0
+            else:
+                return W[x_ind-1,x-2] == 0 and W[x_ind-2,x-2] == 0 and W[x_ind,x-1] == 0
 
 @njit("(int64, int64, int64, int64, int64)",cache=True)
 def isinhexagon(x2,y2,A,B,C):
@@ -19,14 +47,14 @@ def isinhexagon(x2,y2,A,B,C):
 def isinUpRightCorner(x3,y3,A,B,C):
     return (x3 >= 2*(B+C) and y3 >= 2*(A+C))
 
-@njit("(int64, Array(float64, 2, 'C', False, aligned=True), int64, float64, float64)",cache=True)
+@njit("(int64, Array(complex128, 2, 'C', False, aligned=True), int64, float64, float64)",cache=True)
 def weight_hexagon(n,w,a,b,c):
-    A = int(np.round(a*n))
-    B = int(np.round(b*n))
-    C = int(np.round(c*n))
+    A = int(round(a*n))
+    B = int(round(b*n))
+    C = int(round(c*n))
     N = 2*(A+B+C-1)
 
-    W = np.zeros((N,N))
+    W = zeros((N,N),dtype=complex128)
     Lp_space,Lp_time = w.shape[0],w.shape[1]
 
     for x in range(1,N+1):

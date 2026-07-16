@@ -3,90 +3,27 @@ from ._weight_hexagon import weight_hexagon
 from ._core import reduce_weight,reduce_weight_hd,clear_CTower,shuffling,shuffling_hd
 from ._draw_dominos import draw_dominos
 from ._draw_lozenges import draw_lozenges
-from numpy import round,array2string,ndarray,round,ascontiguousarray
+from numpy import round,array2string,ndarray,round,ascontiguousarray,int32,array
 
-def _format_bytes(size):
-    units = [" B", "KB", "MB", "GB", "TB"]
-    i = 0
-    while size >= 1024 and i < len(units) - 1:
-        size /= 1024
-        i += 1
-    return f"{size:.2f} {units[i]}"
 
-def _storage_aztec(n,hd_mode = False):
-    if hd_mode:
-        bytes = 32*n*(n+1)*(2*n+1)/6 + 4 * n**2
-    else :
-        bytes = 16 * n**2
-    return bytes
 
-    
-def _storage_hexa(n,a=1,b=1,c=1,hd_mode=False):
-    N = (int(round(a*n))+int(round(b*n))+int(round(c*n))-1)
-    return _storage_aztec(N,hd_mode)
-
-def compute_storage_aztec(n,hd_mode= False):
-    '''Estimates the needed storage to compute the aztec diamond of size n.
-    Note that the actual storage is slightly higher, since this estimate does
-    not include the storage needed for the rendered plot itself.'''
-    print(_format_bytes(_storage_aztec(n,hd_mode)))
-
-def compute_storage_hexagon(n,a=1,b=1,c=1,hd_mode=False):
-    '''Estimates the needed storage to compute the random hexagon of size n*(a+b+c).
-    Note that the actual storage is slightly higher, since this estimate does not 
-    include the storage needed for the rendered plot itself.'''
-    print(_format_bytes(_storage_hexa(n,a,b,c,hd_mode)))
-    
-
-class data_size:
-    def __init__(self,bytes):
-        self.bytes = bytes
-    def __str__(self):
-        return _format_bytes(self.bytes)
-    def __repr__(self):
-        return _format_bytes(self.bytes)
-    
-    def __add__(self,other):
-        return data_size(self.bytes+other.bytes)
-    def __sub__(self, other):
-        tmp = self.bytes-other.bytes
-        if tmp < 0:
-            return data_size(0)
-        else:
-            return data_size(tmp)
-    
-    def __lt__(self,other):
-        if self.bytes<other.bytes:
-            return True
-        return False
-    def __gt__(self,other):
-        return other < self
     
 class Config:
     '''Configuration object for specifying and overviewing important settings.
     
     Overview:
     ---------
-     - max_storage  : Determines the allowed maximal storage, which can be used by any random tiling.
-                      Note that, all random tilings share the maximum storage, hence the combined 
-                      storage of all active tilings cannot exceed the maximum storage. To change
-                      the maximum storage use "config.set_max_storage".
-     - used_storage : Displays the currently used storage of all active random tilings.
-     - free_storage : Displays the free storage.
      - hd_mode      : Enables or disable the right to use the hard drive mode, this instance can be
-                      changed using  "config.set_hd_mode".'''
+                      changed using "config.set_hd_mode".
+     - warnings     : Enables or disables printed warnings.
+     - mpl_backend  : Sets the backend for displaying the matplotlib plots. Options: 
+                      "Inline" (Default) and "Interactive". '''
     hd_mode      = False
     warnings     = True
     mpl_backend  = 'Inline'
-    max_storage  = data_size(5*2**30)
-    free_storage = data_size(5*2**30)
-    used_storage = data_size(0)
 
     def __setattr__(self, name, value):
-        if name=='max_storage':
-            object.__setattr__(self, name, data_size(value*2**30))
-            object.__setattr__(self,'free_storage',self.max_storage-self.used_storage)
-        elif name == 'used_storage':
+        if name == 'used_storage':
             object.__setattr__(self, name, value)
             object.__setattr__(self,'free_storage',self.max_storage-self.used_storage)
         elif name == 'hd_mode':
@@ -130,25 +67,11 @@ class Config:
             object.__setattr__(self,name,value)
 
     def __repr__(self):
-        max_storage = self.max_storage.__str__()
-        used_storage = self.used_storage.__str__()
-        free_storage = (self.max_storage-self.used_storage).__str__()
-        max_len=max([len(max_storage),len(used_storage),len(free_storage)])
-        max_storage = (max_len- len(max_storage))*' '+max_storage
-        used_storage = (max_len- len(used_storage))*' '+used_storage
-        free_storage = (max_len- len(free_storage))*' '+free_storage
-
-
-        string  = 'Maximum Storage : ' + max_storage + '\n'
-        string += 'Currently Used  : ' + used_storage + '\n'
-        string += 'Free Storage    : ' + free_storage + '\n'
-        string += 'Warnings        : ' + ['Disabled','Enabled'][self.warnings]+'\n'
+        string  = 'Warnings        : ' + ['Disabled','Enabled'][self.warnings]+'\n'
         string += 'Hard Drive Mode : ' + ['Disabled','Enabled'][self.hd_mode]+ '\n'
         string += 'MPL Backend     : ' + self.mpl_backend
         return string
     
-    def set_max_storage(self,S):
-        self.max_storage = S
     def set_hd_mode(self,val):
         self.hd_mode = bool(val)
 
@@ -177,7 +100,7 @@ class RandomTiling:
     
 
 
-    def __init__(self,desc,C,E,plot,storage, _type):
+    def __init__(self,desc,C,E,plot,_type):
         self.__desc = desc
         self.__C = C
         self.__E = E
@@ -185,8 +108,6 @@ class RandomTiling:
         self.__M = None
         self.__type = _type
         self.fig  = None
-        self.storage = storage
-        config.used_storage += storage
         self.__closed = False
 
     def __str__(self):
@@ -194,7 +115,6 @@ class RandomTiling:
     def __repr__(self):
         return self.__desc
     def __del__(self):
-        config.used_storage -= data_size(self.storage.bytes)
         del(self.__desc)
         del(self.__C)
         del(self.__E)
@@ -219,23 +139,25 @@ class RandomTiling:
         
         Inputs:
         ---------
-         - edge        : float (default = 0.); draws edges around the tiles with width 'edge'.
+         - edge        : float (default = 0); draws edges around the tiles with width 'edge'.
                          Alternative it can be set to 'ede scaling', to set the edge width in
                          comparison to the plot size.
-         - paths       : bool (default = False); if True the random paths associated to the
-                         random tiling will be displayed.
-         - dots        : bool (default = False); if True and paths = True, then the particles
-                         of associated determinental point process will be displayed.
-         - coloring    : str or rgb colors, options are 'standard', 'alternative' and 'gray'.
-                         For the aztec diamond, we also have the option 'aztec gray'.
+         - paths       : float (default = 0); if bigger than 0, then the random paths associated
+                         to the random tiling will be displayed. The linewidth  corresponds to 
+                         the value of "paths".
+         - dots        : float (default = 0); if bigger tah 0 and "paths">0, then the particles
+                         of associated determinental point process will be displayed. The size
+                         of the dots is regulated by the value of "dots".
+         - coloring    : str or rgb colors, options are 'standard', 'alternative', 'tropical'
+                         and 'gray'. For the aztec diamond, we also have the option 'aztec gray'.
          - dpi         : integer (default = 100); resolution of the created plot. 
-         - show_gap    : bool (default = False); if True, then the gap will be visualized, if
-                         a gap was used.
-         - show_figure : bool (default = False); if True, then it calls the comand plt.show().
+         - show_gap    : float (default = 0); if bigger than 0, then the gap will be visualized,
+                         if a gap was used. The thickness of the visualizting line is given by
+                         the numerical value of "show_gap".
 
          Special:
          ---------
-          - For Aztec the option 'rotated' (default = True), which rotates the picture by 45 degree.
+          - For Aztec the option 'orientation' (default = 'diamond'), alternative value 'square'.
           - For Hexagon the option 'skewed_grid' (default = False), which uses a skewed grid.
         '''
         if self.__closed == False:
@@ -250,7 +172,6 @@ class RandomTiling:
         '''This function closes the current random tiling and deletes all
         connected data, hence freeing the memory.'''
         self.__closed = True
-        config.used_storage -= self.storage
         self.__desc = 'Closed Random Tiling'
         self.__C = None
         self.__E = None
@@ -259,7 +180,6 @@ class RandomTiling:
         if self.__type<0:
             clear_CTower()
         self.__type = None
-        self.storage = data_size(0)
     
     def get_M(self):
         if self.__closed == False:
@@ -285,7 +205,7 @@ class RandomTiling:
 # Aztec
 #################################
 
-def Aztec(n,w,gap=False,hard_drive_mode=False):
+def Aztec(n,w=[[1]],gap=False,hard_drive_mode=False):
     '''Creates a random aztec diamond.
     Input:
     ---------
@@ -310,15 +230,12 @@ def Aztec(n,w,gap=False,hard_drive_mode=False):
     memory again. This is important when working with large tiles. Only close the tiling once you are 
     finished creating all wanted plots. After closing no new plots can be created.
     '''
-    storage = data_size(_storage_aztec(n,hd_mode=hard_drive_mode))
-    if config.used_storage + storage > config.max_storage:
-        msg  = 'Required storage ('+ _format_bytes(_storage_aztec(n,hard_drive_mode))
-        msg += ') exceeds free storage ('+config.free_storage.__str__()+').\n'
-        msg += 'Increase maximum storage or delete instances of Random Tilings.'
-        print(msg)
-        return
-    
-    desc  = 'Aztec Diamond ('+str(storage)+')\n'
+
+    w  = array(w)
+    if gap:
+        gap = array(gap)
+
+    desc  = 'Aztec Diamond\n'
     desc += 'n   = '+ str(n)+'\n'
     desc += 'w   = '+array2string(w, precision=2, suppress_small=True).replace('\n','\n'+6*' ')+'\n'
     if type(gap)== ndarray:
@@ -326,14 +243,16 @@ def Aztec(n,w,gap=False,hard_drive_mode=False):
     else:
         desc+= 'gap = False'
 
-    def draw_Aztec(M,edge=0,paths=False,dots=False,rotated=True,coloring='standard',
-                   show_gap=False,dpi=100,show_figure=False):
-        edge = str(edge)
-        return draw_dominos(M,gap,edge,paths,dots,rotated,coloring,show_gap,dpi,show_figure)
+    def draw_Aztec(M,**kwargs):
+        return draw_dominos(M,gap = gap,**kwargs)
 
-    w = w.astype(float)
-    w = ascontiguousarray(w)
-    W = weight_aztec(n,w)
+    w  = w.astype(complex)
+    w1 = w.real
+    w2 = w.imag 
+    w1 = ascontiguousarray(w1)
+    w2 = ascontiguousarray(w2)
+    W  = weight_aztec(n,w1)
+    E  = weight_aztec(n,w2).astype(int32)
     if type(gap)==ndarray:
         N = 2*n
         end = N
@@ -366,11 +285,11 @@ def Aztec(n,w,gap=False,hard_drive_mode=False):
         E = None
     else:
         _type = 0
-        C,E,of = reduce_weight(W)
+        C,E,of = reduce_weight(W,E)
         if of and config.warnings:
             print('Numerical instability detected: Overflow/Underflow!')
     
-    return RandomTiling(desc,C,E,draw_Aztec,storage,_type)
+    return RandomTiling(desc,C,E,draw_Aztec,_type)
 
 
 
@@ -379,7 +298,7 @@ def Aztec(n,w,gap=False,hard_drive_mode=False):
 #################################
 
 
-def Hexagon(n,w,a=1,b=1,c=1,gap=False,hard_drive_mode=False):
+def Hexagon(n,w=[[1],[1]],a=1,b=1,c=1,gap=False,hard_drive_mode=False):
     '''Creates a random hexagon tiling.
     Input:
     ---------
@@ -405,16 +324,11 @@ def Hexagon(n,w,a=1,b=1,c=1,gap=False,hard_drive_mode=False):
     memory again. This is important when working with large tiles. Only close the tiling once you are 
     finished creating all wanted plots. After closing no new plots can be created.
     '''
-    storage = data_size(_storage_hexa(n,a,b,c,hard_drive_mode))
-    if config.used_storage + storage > config.max_storage:
-        msg  = 'Required storage ('+ _format_bytes(_storage_hexa(n,a,b,c,hard_drive_mode))
-        msg += ') exceeds free storage ('+config.free_storage.__str__()+').\n'
-        msg += 'Increase maximum storage or delete instances of Random Tilings.'
-        print(msg)
-        return
-    w = w.astype(float)
+    w  = array(w)
+    if gap:
+        gap = array(gap)
     
-    desc  = 'Hexagon Tiling ('+str(storage)+')\n'
+    desc  = 'Hexagon Tiling\n'
     desc += 'n   = '+str(n)+', a = '+ str(a)+', b = '+str(b)+', c = '+str(c)+ '\n'
     desc += 'w   = '+array2string(w, precision=2, suppress_small=True).replace('\n','\n'+6*' ')+'\n'
     if type(gap)== ndarray:
@@ -425,12 +339,15 @@ def Hexagon(n,w,a=1,b=1,c=1,gap=False,hard_drive_mode=False):
     
 
     def draw_Hexagon(M,skewed_grid=False,edge=0,paths=False,dots=False,coloring='standard',
-                     show_gap=False,dpi=100,show_figure=False):
+                     show_gap=False,dpi=100):
         edge = str(edge)
-        fig = draw_lozenges(n,M,gap,a,b,c,skewed_grid,edge,paths,dots,coloring,show_gap,dpi,show_figure)
+        fig = draw_lozenges(n,M,gap,a,b,c,skewed_grid,edge,paths,dots,coloring,show_gap,dpi)
         return fig
+    w = w.astype(complex)
     w = ascontiguousarray(w)
     W = weight_hexagon(n,w,a,b,c)
+
+
     if type(gap)==ndarray:
         A = int(round(a*n))
         B = int(round(b*n))
@@ -460,9 +377,11 @@ def Hexagon(n,w,a=1,b=1,c=1,gap=False,hard_drive_mode=False):
         E = None
     else:
         _type = 0
-        C,E,of = reduce_weight(W)
+        E = ascontiguousarray(W.imag).astype(int32)
+        W = ascontiguousarray(W.real)
+        C,E,of = reduce_weight(W,E)
         if of and config.warnings:
             print('Numerical instability detected: Overflow/Underflow!')
 
-    return RandomTiling(desc,C,E,draw_Hexagon,storage,_type)
+    return RandomTiling(desc,C,E,draw_Hexagon,_type)
 
