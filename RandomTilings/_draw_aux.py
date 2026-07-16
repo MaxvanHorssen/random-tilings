@@ -1,6 +1,6 @@
 from numpy import array,min,max,floating
 
-_colors_A = {'standard' :       array([[1.0,0.0,0.0],
+_color_schemes_A = {'standard' :       array([[1.0,0.0,0.0],
                                        [0.0,1.0,0.0],
                                        [1.0,1.0,0.0],
                                        [0.4,0.4,1.0]]),
@@ -25,7 +25,7 @@ _colors_A = {'standard' :       array([[1.0,0.0,0.0],
                                        [2.5/9,2.5/9,2.5/9],
                                        [7.5/9,7.5/9,7.5/9]])}
 
-_colors_H = {'standard' :       array([[1.0,0.0,0.0],
+_color_schemes_H = {'standard' :       array([[1.0,0.0,0.0],
                                        [0.0,1.0,1.0],
                                        [1.0,1.0,0.0]]),
              'alternative' :    array([[  5/255, 50/255,100/255],
@@ -35,36 +35,35 @@ _colors_H = {'standard' :       array([[1.0,0.0,0.0],
                                        [0.5 ,0.5 ,0.5 ],
                                        [0.75,0.75,0.75]])}
 
-
-def _rgb_wrapper(coloring):
-    C =    array(coloring)
+def _rgb_wrapper(colors):
+    C = array(colors)
     if C.shape[1]!=3:
         print('Does not satisfy RGB shape input, i.e. (M x 3) array.')
         raise
     dtype = C.dtype.type
-    if issubclass(dtype,   floating):
-        if    min(C)<0 or    max(C)>1:
+    if issubclass(dtype, floating):
+        if min(C)<0 or max(C)>1:
             print('Float point RGB colors needs to be between 0 and 1.')
             raise
         return C
     else:
-        if    min(C)<0 or    max(C)>255:
+        if min(C)<0 or max(C)>255:
             print('Integer RGB colors need to be between 0 and 255.')
             raise
         return C/255
     
-def _set_color(coloring,model,paths):
+def _set_color(color_scheme,model,paths):
     if model == 'aztec':
-        colors = _colors_A
+        color_schemes = _color_schemes_A
     else:
-        colors = _colors_H
+        color_schemes = _color_schemes_H
     if paths:
-        if type(coloring)==str and coloring.lower()=='standard':
-            return    array([[0.4,0.4,1],[0.4,0.4,1],[0.4,0.4,1]])
+        if type(color_scheme)==str and color_scheme.lower()=='standard':
+            return array([[0.4,0.4,1],[0.4,0.4,1],[0.4,0.4,1]])
         else:
-            return _rgb_wrapper(coloring)
+            return _rgb_wrapper(color_scheme)
     else:
-        if type(coloring)==str:
-            return colors[coloring]
+        if type(color_scheme)==str:
+            return color_schemes[color_scheme]
         else:
-            return _rgb_wrapper(coloring)
+            return _rgb_wrapper(color_scheme)
