@@ -1,8 +1,6 @@
-from numpy import zeros,load,save,int8,int32
+from numpy import zeros,int8
 from numpy.random import random
 from numba import njit,prange
-from tqdm import tqdm
-import os
 
 @njit("(Array(int8, 2, 'C', False, aligned=True), int64, int64, int64)",cache=True,inline="always")
 def no_neighbor(M,k,m,n):

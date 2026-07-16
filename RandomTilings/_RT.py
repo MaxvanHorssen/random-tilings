@@ -6,13 +6,13 @@ from ._draw_lozenges import draw_lozenges
 from numpy import round,array2string,ndarray,round,ascontiguousarray,int32,array
     
 class Config:
-    '''Configuration object for specifying and overviewing important settings.
+    '''Configuration object for specifying and overviewing global settings.
     
     Overview:
     ---------
      - warnings     : Enables or disables printed warnings.
      - mpl_backend  : Sets the backend for displaying the matplotlib plots. Options: 
-                      "Inline" (Default) and "Interactive". '''
+                      "inline" (default) and "interactive".'''
     warnings     = True
     mpl_backend  = 'Inline'
 
@@ -23,6 +23,7 @@ class Config:
         elif name == 'warnings':
             if self.warnings == False and value:
                 msg  = 'Warnings regarding numerical instabilities are now disabled!'
+                print(msg)
             object.__setattr__(self,name,bool(value))
         elif name == 'mpl_backend':
             from IPython import get_ipython
@@ -30,19 +31,18 @@ class Config:
             if ip is None:
                 raise RuntimeError("This function must be run inside IPython/Jupyter.")
             
-            if value == "Interactive" or value == "interactive":
-                value = "Interactive"
-                if self.mpl_backend!= value:
+            if value.lower() == "interactive":
+                value = "interactive"
+                if self.mpl_backend != value:
                     ip.run_line_magic("matplotlib", "widget")
-            elif value == "Inline" or value == "inline":
-                value = "Inline"
-                if self.mpl_backend!= value:
+            elif value.lower() == "inline":
+                value = "inline"
+                if self.mpl_backend != value:
                     ip.run_line_magic("matplotlib", "inline")
             else:
-                raise ValueError("mode must be 'interactive', 'inline', or 'notebook'")
+                raise ValueError("Mode must be 'interactive', 'inline', or 'notebook'")
             
             object.__setattr__(self,name,value)
-
         else:
             object.__setattr__(self,name,value)
 
@@ -52,11 +52,9 @@ class Config:
         return string
    
     def set_mpl_backend(self,mode):
-        """
-        mode:
+        """Mode:
             "interactive" -> Jupyter widget backend
-            "inline"      -> Classic inline plots
-        """
+            "inline"      -> Classic inline plots"""
         self.mpl_backend = mode
 
 config = Config()
@@ -64,23 +62,20 @@ config = Config()
 class RandomTiling:
     '''Random Tiling object:
 
-    Attached Routines:
-     - shuffle : Computes a new instance of the random tiling according to the underlying model.
-     - plot    : Creates the plot of the current tiling.
-     - close   : Closes the tiling when done with.
-     - get_M   : Returns a copy of the underlying edge matrix (advanced).
-     - get_C   : Returns a copy of the underlying C-Tower (advanced).
-     
-    General Procedure:
-     shuffle -> plot -> shuffle -> ... -> plot -> close'''
+    Attached routines:
+    ------------------
+     - "close" closes the Random Tiling object.
+     - "get_C" returns a copy of the underlying C-tower (advanced).
+     - "get_M" returns a copy of the underlying edge matrix M (advanced).
+     - "plot" creates the plot of the current tiling.
+     - "shuffle" samples the random tiling according to the underlying model.'''
 
-    def __init__(self,desc,C,E,plot,_type):
+    def __init__(self,desc,C,E,plot):
         self.__desc = desc
         self.__C = C
         self.__E = E
         self.__plot = plot
         self.__M = None
-        self.__type = _type
         self.fig  = None
         self.__closed = False
 
@@ -96,41 +91,32 @@ class RandomTiling:
         del(self.__M)
 
     def shuffle(self):
-        '''Creates a new instances of the random tiling.
-        '''
+        '''Samples the random tiling according to the underlying model.'''
         if self.__closed == False:
             self.__M,of = shuffling(self.__C,self.__E)
             if of and config.warnings:
                 print('Numerical instability detected: Overflow/Underflow!')
         else:
-            print('This random riling is already closed, create a new one!')
+            print('This random riling is already closed.')
 
     def plot(self,**args):
-        '''This function creates a figure containing the plot of the random tiling.
+        '''This routine creates a figure containing the plot of the sampled random tiling.
         
         Inputs:
-        ---------
-         - edge        : float (default = 0); draws edges around the tiles with width 'edge'.
-                         Alternative it can be set to 'ede scaling', to set the edge width in
-                         comparison to the plot size.
-         - paths       : float (default = 0); if bigger than 0, then the random paths associated
-                         to the random tiling will be displayed. The linewidth  corresponds to 
-                         the value of "paths".
-         - dots        : float (default = 0); if bigger tah 0 and "paths">0, then the particles
-                         of associated determinental point process will be displayed. The size
-                         of the dots is regulated by the value of "dots".
-         - color_scheme    : str or rgb colors, options are 'standard', 'alternative', 'tropical'
-                         and 'gray'. For the aztec diamond, we also have the option 'aztec gray'.
-         - dpi         : integer (default = 100); resolution of the created plot. 
-         - gap    : float (default = 0); if bigger than 0, then the gap will be visualized,
-                         if a gap was used. The thickness of the visualizting line is given by
-                         the numerical value of "gap".
-
-         Special:
-         ---------
-          - For Aztec the option 'orientation' (default = 'diamond'), alternative value 'square'.
-          - For Hexagon the option 'skewed_grid' (default = False), which uses a skewed grid.
-        '''
+        -------
+         - "dot_width" is the thickness of the dots visualizing the particles associated with the non-intersecting path system. This option only takes effect when path_width = True. By default, dot_width = 0.
+         - "dpi" is the resolution of the figure. By default, dpi = 100.
+         - "edge_width" is the thickness of the border around the domino tiles. By default, edge_width = 0, resulting in no border being drawn.
+         - "gap_width" is the thickness of the lines visualizing the gaps. By default, gap_width = 0.
+         - "path_width" displays the non-intersecting path system when set to True. By default, path_width = False.
+         
+         Aztec specific:
+         - "color_scheme" is the color scheme of the figure. Five built-in options are available: "standard", "alternative", "gray", "aztec gray" (custom-made for the 2x2-periodic Aztec diamond), and "tropical". Custom color schemes are specified as [(r,g,b),(r,g,b),(r,g,b),(r,g,b)], where the four RGB triples correspond to the colors of the north, west, south, and east dominoes, respectively. Each color component r, g, and b may be given either as an integer in {0,...,255} or as a real number in [0,1]. By default, color_scheme = "standard".
+         - "orientation" gives the orientation of the figure, for which two options are available: "diamond" and "square". By default, orientation = "diamond".
+         
+         Hexagon specific:
+         - color_scheme is the color scheme of the figure. Three built-in options are available: "standard", "alternative", and "gray". Custom color schemes are specified as [(r,g,b),(r,g,b),(r,g,b)], where the three RGB triples correspond to the colors of the left, right, horizontal lozenges, respectively. Each color component r, g, and b may be given either as an integer in {0,...,255} or as a real number in [0,1]. By default, color_scheme = "standard".
+         - "shape" (only for Hexagon) gives the shape of the figure, for which two options are available: "regular" and "skewed". By default, shape = "regular".'''
         if self.__closed == False:
             if type(self.__M) == type(None):
                 print('The Random tiling needs to be shuffeld first!')
@@ -148,7 +134,6 @@ class RandomTiling:
         self.__E = None
         self.__M = None
         self.__plot = None
-        self.__type = None
     
     def get_M(self):
         if self.__closed == False:
@@ -164,36 +149,33 @@ class RandomTiling:
         else:
             print('This random tiling is already closed, create a new one!')
             
-#################################
-# Aztec
-#################################
+#########
+# Aztec #
+#########
 
 def Aztec(n,w=[[1]],gap=False):
-    '''Creates a random aztec diamond.
+    '''This routine creates a model of the Aztec diamond.
+    
     Input:
-    ---------
-     - n               : integer; defines the size of the aztec diamond.
-     - w               : 2d numpy.ndarray; the periodic base weight.
-     - gap             : 2d numpy.ndarray (default = False); for more information see documentation
-                         
-    Output: RT (random tiling) object.
+    ------
+    "w" is the weighting on the edge graph, which can be a matrix of any size. We adopt the convention that the weightings is assigned on the bottom left corner of the Aztec diamond, and is then periodically extended to the full Aztec diamond. By default, the uniform weighting is used, i.e., w = [[1]].
+    "gap" must be of the form [[t1,x1,y1],[t2,x2,y2],...,[tm,xm,ym]], which means that at each time tj, there is a vertical gap from xj to yj. The points must satisfy tj in {0,1,...,2n} and xj,yj must be integers. It is allowed to take xj = yj, which represents a single point xj.         
+    
+    Output:
+    -------
+    Random Tiling (RT) object
     
     Basic example:
     A = RT.Aztec(100)
     A.shuffle()
     A.plot()
-    A.close()
-
-    Note: The close comand deletes all relevant information of the randomtiling afterwards freeing the
-    memory again. This is important when working with large tiles. Only close the tiling once you are 
-    finished creating all wanted plots. After closing no new plots can be created.
-    '''
+    A.close()'''
 
     w  = array(w)
     if gap:
         gap = array(gap)
 
-    desc  = 'Aztec Diamond\n'
+    desc  = 'Aztec Diamond tiling\n'
     desc += 'n   = '+ str(n)+'\n'
     desc += 'w   = '+array2string(w, precision=2, suppress_small=True).replace('\n','\n'+6*' ')+'\n'
     if type(gap)== ndarray:
@@ -232,46 +214,43 @@ def Aztec(n,w=[[1]],gap=False):
                     if 1 <= N-(yWest-1) and N-(yWest-1) <= N and 1 <= xWest and xWest <= N:
                         W[end-yWest,xWest-1] = 0
 
-    _type = 0
     C,E,of = reduce_weight(W,E)
     if of and config.warnings:
         print('Numerical instability detected: Overflow/Underflow!')
     
-    return RandomTiling(desc,C,E,plot_Aztec,_type)
+    return RandomTiling(desc,C,E,plot_Aztec)
 
-#################################
-# Hexagon
-#################################
+###########
+# Hexagon #
+###########
 
 def Hexagon(n,w=[[1],[1]],a=1,b=1,c=1,gap=False):
-    '''Creates a random hexagon tiling.
+    '''This routine creates a model of the Hexagon.
+    
     Input:
-    ---------
-     - n               : integer; defines the base size of the hexagon tiling.
-     - w               : 2d numpy.ndarray; the periodic base weight.
-     - a,b,c           : float (default = 1); sets the dimensions of the tiling.
-     - gap             : ...
-                         
-    Output: RT (random tiling) object.
+    ------
+     "w" is the weighting on the edge graph, which can be a matrix of any size. For a pxq periodic weightings, w must be a matrix of size 2pxq. We adopt the convention that the weightings is assigned on the bottom left corner of the hexagon, and is then periodically extended to the full hexagon. By default, the uniform weighting is used, i.e., w = [[1],[1]].
+     "a", "b", and "c" are the side length multipliers, i.e, the hexagon will be of size (an)x(bn)x(cn). By default, a = b = c = 1.
+     "gap" must be of the form [[t1,x1,y1],[t2,x2,y2],...,[tm,xm,ym]], which means that at each time tj, there is a vertical gap from xj to yj. The points must satisfy tj in {0,1,...,2n} and xj,yj must be half-integers. It is allowed to take xj = yj, which represents a single point xj.
+
+    Output:
+    -------
+    Random Tiling (RT) object
     
     Basic example:
     H = RT.Hexagon(100)
     H.shuffle()
     H.plot()
-    H.close()
+    H.close()'''
 
-    Note: The close comand deletes all relevant information of the random tiling afterwards freeing the
-    memory again. This is important when working with large tiles. Only close the tiling once you are 
-    finished creating all wanted plots. After closing no new plots can be created.
-    '''
     w  = array(w)
     if gap:
         gap = array(gap)
     
-    desc  = 'Hexagon Tiling\n'
+    desc  = 'Hexagon tiling\n'
     desc += 'n   = '+str(n)+', a = '+ str(a)+', b = '+str(b)+', c = '+str(c)+ '\n'
     desc += 'w   = '+array2string(w, precision=2, suppress_small=True).replace('\n','\n'+6*' ')+'\n'
-    if type(gap)== ndarray:
+    if type(gap) == ndarray:
         desc += 'gap = ' + array2string(gap, precision=2, suppress_small=True).replace('\n','\n'+6*' ')
     else:
         desc+= 'gap = False'
@@ -286,7 +265,7 @@ def Hexagon(n,w=[[1],[1]],a=1,b=1,c=1,gap=False):
     w = ascontiguousarray(w)
     W = weight_hexagon(n,w,a,b,c)
 
-    if type(gap)==ndarray:
+    if type(gap) == ndarray:
         A = int(round(a*n))
         B = int(round(b*n))
         C = int(round(c*n))
@@ -305,11 +284,10 @@ def Hexagon(n,w=[[1],[1]],a=1,b=1,c=1,gap=False):
                 if 1 <= N-(yHorizontal-1) and N-(yHorizontal-1) <= N and 1 <= xHorizontal and xHorizontal <= N:
                     W[end-yHorizontal,xHorizontal-1] = 0
 
-    _type = 0
     E = ascontiguousarray(W.imag).astype(int32)
     W = ascontiguousarray(W.real)
     C,E,of = reduce_weight(W,E)
     if of and config.warnings:
         print('Numerical instability detected: Overflow/Underflow!')
 
-    return RandomTiling(desc,C,E,plot_Hexagon,_type)
+    return RandomTiling(desc,C,E,plot_Hexagon)
