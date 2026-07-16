@@ -1,24 +1,18 @@
 from ._weight_aztec import weight_aztec
 from ._weight_hexagon import weight_hexagon
-from ._core import reduce_weight,reduce_weight_hd,clear_CTower,shuffling,shuffling_hd
+from ._core import reduce_weight,shuffling
 from ._draw_dominos import draw_dominos
 from ._draw_lozenges import draw_lozenges
 from numpy import round,array2string,ndarray,round,ascontiguousarray,int32,array
-
-
-
     
 class Config:
     '''Configuration object for specifying and overviewing important settings.
     
     Overview:
     ---------
-     - hd_mode      : Enables or disable the right to use the hard drive mode, this instance can be
-                      changed using "config.set_hd_mode".
      - warnings     : Enables or disables printed warnings.
      - mpl_backend  : Sets the backend for displaying the matplotlib plots. Options: 
                       "Inline" (Default) and "Interactive". '''
-    hd_mode      = False
     warnings     = True
     mpl_backend  = 'Inline'
 
@@ -26,29 +20,16 @@ class Config:
         if name == 'used_storage':
             object.__setattr__(self, name, value)
             object.__setattr__(self,'free_storage',self.max_storage-self.used_storage)
-        elif name == 'hd_mode':
-            if self.hd_mode==False and value:
-                msg  = 'Warning: The hard drive mode can now be used. This mode is meant to handle large\n'
-                msg += 'tilings. However, large tilings require extreme amount of storage, hence all relveant\n'
-                msg += 'data will immediately stored on the hard drive. Therefore, it is important to free\n'
-                msg += 'the storage after usage. To free the storage use the comand "close", for example if\n'
-                msg += '"A" is your random tiling call "A.close()" to free the storage. Also, never use more\n'
-                msg += 'then one random tiling with enabled hard drive mode, since they will overwrite each\n'
-                msg += 'others data. Consequenctly, they can not be properly shuffeld of plotted.'
-                print(msg)
-            object.__setattr__(self,name,bool(value))
         elif name == 'warnings':
             if self.warnings == False and value:
                 msg  = 'Warnings regarding numerical instabilities are now disabled!'
             object.__setattr__(self,name,bool(value))
-
         elif name == 'mpl_backend':
             from IPython import get_ipython
             ip = get_ipython()
             if ip is None:
                 raise RuntimeError("This function must be run inside IPython/Jupyter.")
             
-        
             if value == "Interactive" or value == "interactive":
                 value = "Interactive"
                 if self.mpl_backend!= value:
@@ -57,7 +38,6 @@ class Config:
                 value = "Inline"
                 if self.mpl_backend!= value:
                     ip.run_line_magic("matplotlib", "inline")
-            
             else:
                 raise ValueError("mode must be 'interactive', 'inline', or 'notebook'")
             
@@ -68,13 +48,9 @@ class Config:
 
     def __repr__(self):
         string  = 'Warnings        : ' + ['Disabled','Enabled'][self.warnings]+'\n'
-        string += 'Hard Drive Mode : ' + ['Disabled','Enabled'][self.hd_mode]+ '\n'
         string += 'MPL Backend     : ' + self.mpl_backend
         return string
-    
-    def set_hd_mode(self,val):
-        self.hd_mode = bool(val)
-
+   
     def set_mpl_backend(self,mode):
         """
         mode:
@@ -97,8 +73,6 @@ class RandomTiling:
      
     General Procedure:
      shuffle -> plot -> shuffle -> ... -> plot -> close'''
-    
-
 
     def __init__(self,desc,C,E,plot,_type):
         self.__desc = desc
@@ -125,12 +99,9 @@ class RandomTiling:
         '''Creates a new instances of the random tiling.
         '''
         if self.__closed == False:
-            if self.__type <0:
-                self.__M = shuffling_hd(-self.__type)
-            else:
-                self.__M,of = shuffling(self.__C,self.__E)
-                if of and config.warnings:
-                    print('Numerical instability detected: Overflow/Underflow!')
+            self.__M,of = shuffling(self.__C,self.__E)
+            if of and config.warnings:
+                print('Numerical instability detected: Overflow/Underflow!')
         else:
             print('This random riling is already closed, create a new one!')
 
@@ -148,12 +119,12 @@ class RandomTiling:
          - dots        : float (default = 0); if bigger tah 0 and "paths">0, then the particles
                          of associated determinental point process will be displayed. The size
                          of the dots is regulated by the value of "dots".
-         - coloring    : str or rgb colors, options are 'standard', 'alternative', 'tropical'
+         - color_scheme    : str or rgb colors, options are 'standard', 'alternative', 'tropical'
                          and 'gray'. For the aztec diamond, we also have the option 'aztec gray'.
          - dpi         : integer (default = 100); resolution of the created plot. 
-         - show_gap    : float (default = 0); if bigger than 0, then the gap will be visualized,
+         - gap    : float (default = 0); if bigger than 0, then the gap will be visualized,
                          if a gap was used. The thickness of the visualizting line is given by
-                         the numerical value of "show_gap".
+                         the numerical value of "gap".
 
          Special:
          ---------
@@ -177,15 +148,11 @@ class RandomTiling:
         self.__E = None
         self.__M = None
         self.__plot = None
-        if self.__type<0:
-            clear_CTower()
         self.__type = None
     
     def get_M(self):
         if self.__closed == False:
-            if self.__type<0:
-                print('Not available for hd-mode.')
-            elif type(self.__M)== None:
+            if type(self.__M)== None:
                 print('Random tiling needs to be shuffeld first!')
             else:
                 return self.__M.copy()
@@ -193,35 +160,26 @@ class RandomTiling:
             print('This random tiling is already closed, create a new one!')
     def get_CE(self):
         if self.__closed== False:
-            if self.__type<0:
-                print('Not available for hd-mode.')
-            else:
-                return self.__C.copy(),self.__E.copy()
+            return self.__C.copy(),self.__E.copy()
         else:
             print('This random tiling is already closed, create a new one!')
             
-
 #################################
 # Aztec
 #################################
 
-def Aztec(n,w=[[1]],gap=False,hard_drive_mode=False):
+def Aztec(n,w=[[1]],gap=False):
     '''Creates a random aztec diamond.
     Input:
     ---------
      - n               : integer; defines the size of the aztec diamond.
      - w               : 2d numpy.ndarray; the periodic base weight.
      - gap             : 2d numpy.ndarray (default = False); for more information see documentation
-     - hard_drive_mode : bool (default = False); if true then routine stores actively most data on
-                         the hard drive. The option is intendet for large tilings. Note to clear the
-                         storage after, using the comand 'close', see the example below.
                          
     Output: RT (random tiling) object.
     
     Example:
-    n = 50
-    w = np.array([[1]])
-    A = RT.Aztec(n,w)
+    A = RT.Aztec(100)
     A.shuffle()
     A.plot()
     A.close()
@@ -243,14 +201,12 @@ def Aztec(n,w=[[1]],gap=False,hard_drive_mode=False):
     else:
         desc+= 'gap = False'
 
-    def draw_Aztec(M,**kwargs):
-        return draw_dominos(M,gap = gap,**kwargs)
+    def plot_Aztec(M,**kwargs):
+        return draw_dominos(n,M,gap=gap,**kwargs)
 
     w  = w.astype(complex)
-    w1 = w.real
-    w2 = w.imag 
-    w1 = ascontiguousarray(w1)
-    w2 = ascontiguousarray(w2)
+    w1 = ascontiguousarray(w.real)
+    w2 = ascontiguousarray(w.imag)
     W  = weight_aztec(n,w1)
     E  = weight_aztec(n,w2).astype(int32)
     if type(gap)==ndarray:
@@ -276,49 +232,33 @@ def Aztec(n,w=[[1]],gap=False,hard_drive_mode=False):
                     if 1 <= N-(yWest-1) and N-(yWest-1) <= N and 1 <= xWest and xWest <= N:
                         W[end-yWest,xWest-1] = 0
 
-    if hard_drive_mode:
-        if config.hd_mode==False:
-            print('Hard drive mode also needs to be enabled via "config.set_hd_mode(True)".')
-            return
-        _type = -W.shape[0]//2
-        C = reduce_weight_hd(W)
-        E = None
-    else:
-        _type = 0
-        C,E,of = reduce_weight(W,E)
-        if of and config.warnings:
-            print('Numerical instability detected: Overflow/Underflow!')
+    _type = 0
+    C,E,of = reduce_weight(W,E)
+    if of and config.warnings:
+        print('Numerical instability detected: Overflow/Underflow!')
     
-    return RandomTiling(desc,C,E,draw_Aztec,_type)
-
-
+    return RandomTiling(desc,C,E,plot_Aztec,_type)
 
 #################################
 # Hexagon
 #################################
 
-
-def Hexagon(n,w=[[1],[1]],a=1,b=1,c=1,gap=False,hard_drive_mode=False):
+def Hexagon(n,w=[[1],[1]],a=1,b=1,c=1,gap=False):
     '''Creates a random hexagon tiling.
     Input:
     ---------
      - n               : integer; defines the base size of the hexagon tiling.
-     - a,b,c           : float (default = 1); sets the dimensions of the tiling.
      - w               : 2d numpy.ndarray; the periodic base weight.
-     - gap             : 2d numpy.ndarray (default = False); for more information see documentation
-     - hard_drive_mode : bool (default = False); if true then routine stores actively most data on
-                         the hard drive. The option is intendet for large tilings. Note to clear the
-                         storage after, using the comand 'close', see the example below.
+     - a,b,c           : float (default = 1); sets the dimensions of the tiling.
+     - gap             : ...
                          
     Output: RT (random tiling) object.
     
     Example:
-    n = 50
-    w = np.array([[1]])
-    A = RT.Hexagon(n,w)
-    A.shuffle()
-    A.plot()
-    A.close()
+    H = RT.Hexagon(100)
+    H.shuffle()
+    H.plot()
+    H.close()
 
     Note: The close comand deletes all relevant information of the random tiling afterwards freeing the
     memory again. This is important when working with large tiles. Only close the tiling once you are 
@@ -336,17 +276,12 @@ def Hexagon(n,w=[[1],[1]],a=1,b=1,c=1,gap=False,hard_drive_mode=False):
     else:
         desc+= 'gap = False'
 
-    
+    def plot_Hexagon(M,**kwargs):
+        return draw_lozenges(n,M,gap=gap,**kwargs)
 
-    def draw_Hexagon(M,skewed_grid=False,edge=0,paths=False,dots=False,coloring='standard',
-                     show_gap=False,dpi=100):
-        edge = str(edge)
-        fig = draw_lozenges(n,M,gap,a,b,c,skewed_grid,edge,paths,dots,coloring,show_gap,dpi)
-        return fig
     w = w.astype(complex)
     w = ascontiguousarray(w)
     W = weight_hexagon(n,w,a,b,c)
-
 
     if type(gap)==ndarray:
         A = int(round(a*n))
@@ -367,21 +302,11 @@ def Hexagon(n,w=[[1],[1]],a=1,b=1,c=1,gap=False,hard_drive_mode=False):
                 if 1 <= N-(yHorizontal-1) and N-(yHorizontal-1) <= N and 1 <= xHorizontal and xHorizontal <= N:
                     W[end-yHorizontal,xHorizontal-1] = 0
 
+    _type = 0
+    E = ascontiguousarray(W.imag).astype(int32)
+    W = ascontiguousarray(W.real)
+    C,E,of = reduce_weight(W,E)
+    if of and config.warnings:
+        print('Numerical instability detected: Overflow/Underflow!')
 
-    if hard_drive_mode:
-        if config.hd_mode==False:
-            print('Hard drive mode also needs to be enabled via "config.set_hd_mode(True)".')
-            return
-        _type = -W.shape[0]//2
-        C = reduce_weight_hd(W)
-        E = None
-    else:
-        _type = 0
-        E = ascontiguousarray(W.imag).astype(int32)
-        W = ascontiguousarray(W.real)
-        C,E,of = reduce_weight(W,E)
-        if of and config.warnings:
-            print('Numerical instability detected: Overflow/Underflow!')
-
-    return RandomTiling(desc,C,E,draw_Hexagon,_type)
-
+    return RandomTiling(desc,C,E,plot_Hexagon,_type)

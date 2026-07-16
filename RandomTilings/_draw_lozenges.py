@@ -30,67 +30,62 @@ def type_of_lozenge(x,y):
         return 2
 
 @njit("(int64, int64, bool)",cache=True)
-def points_lozenge(x,y,skewed_grid):
+def points_lozenge(x,y,regular):
     type_loz = type_of_lozenge(x,y)
     if type_loz == 0:
-        if skewed_grid:
-            A = array([[x-1,y-2],
-                       [x-1,y  ],
-                       [x+1,y+2],
-                       [x+1,y  ]])
-        else:
+        if regular:
             A = array([[x-1,y-(x-1)//2-2],
                        [x-1,y-(x-1)//2  ],
                        [x+1,y-(x+1)//2+2],
                        [x+1,y-(x+1)//2  ]])
-    elif type_loz == 1:
-        if skewed_grid:
-            A = array([[x-1,y-1],
-                       [x-1,y+1],
-                       [x+1,y+1],
-                       [x+1,y-1]])
         else:
+            A = array([[x-1,y-2],
+                       [x-1,y  ],
+                       [x+1,y+2],
+                       [x+1,y  ]])
+    elif type_loz == 1:
+        if regular:
             A = array([[x-1,y-(x-1)//2-1],
                        [x-1,y-(x-1)//2+1],
                        [x+1,y-(x+1)//2+1],
                        [x+1,y-(x+1)//2-1]])
-    else:
-        if skewed_grid:
-            A = array([[x-2,y-1],
-                       [x  ,y+1],
-                       [x+2,y+1],
-                       [x  ,y-1]])
         else:
+            A = array([[x-1,y-1],
+                       [x-1,y+1],
+                       [x+1,y+1],
+                       [x+1,y-1]])
+    else:
+        if regular:
             A = array([[x-2,y-x//2  ],
                        [x  ,y-x//2+1],
                        [x+2,y-x//2  ],
                        [x  ,y-x//2-1]])
+        else:
+            A = array([[x-2,y-1],
+                       [x  ,y+1],
+                       [x+2,y+1],
+                       [x  ,y-1]])
     return A,type_loz
 
 @njit("(int64, int64, bool)",cache=True)
-def points_path(x,y,skewed_grid):
+def points_path(x,y,regular):
     type_loz = type_of_lozenge(x,y)
     if type_loz == 0:
-        if skewed_grid:
-            A = array([[x-1,y-1],
-                       [x+1,y+1]])
+        if regular:
+            A = array([[x-1,y-1-(x-1)//2],[x+1,y+1-(x+1)//2]])
         else:
-            A = array([[x-1,y-1-(x-1)//2],
-                       [x+1,y+1-(x+1)//2]])
+            A = array([[x-1,y-1],[x+1,y+1]])
     elif type_loz == 1:
-        if skewed_grid:
-            A = array([[x-1,y],
-                       [x+1,y]])
+        if regular:
+            A = array([[x-1,y-(x-1)//2],[x+1,y-(x+1)//2]])
         else:
-            A = array([[x-1,y-(x-1)//2],
-                       [x+1,y-(x+1)//2]])
+            A = array([[x-1,y],[x+1,y]])
     else:
-        A = array([[0,0],
-                   [0,0]])
+        A = array([[0,0],[0,0]])
     return A,type_loz
 
-@njit("(Array(int8, 2, 'C', False, aligned=True), int64, int64, int64, boolean,boolean)",cache=True)
-def compute_hexagon_data(M,A,B,C,skewed_grid,paths):
+@njit("(Array(int8, 2, 'C', False, aligned=True), int64, int64, int64, bool, bool)",cache=True)
+def compute_hexagon_data(M,A,B,C,regular,paths):
     N = M.shape[0]
     if paths:
         P = zeros((A*B+A*C+B*C,2,2),dtype=int64)
@@ -102,90 +97,77 @@ def compute_hexagon_data(M,A,B,C,skewed_grid,paths):
         for y in range(1,N+1):
             if in_hexagon(x,y,A,B,C) and M[N-y,x-1] == 1:
                 if paths:
-                    loz,type_loz = points_path(x,y,skewed_grid)
+                    loz,type_loz = points_path(x,y,regular)
                 else:
-                    loz,type_loz = points_lozenge(x,y,skewed_grid)
+                    loz,type_loz = points_lozenge(x,y,regular)
                 P[k]=loz
                 L[k]=type_loz
                 k+=1
-
     return P,L
 
-
-
-
-
-
-def draw_lozenges(n,M,gap=False,a=1,b=1,c=1,skewed_grid=False,edge=False,
-                  paths=False,dots=False,coloring='standard',show_gap=False,
-                  dpi=100):
-    
+def draw_lozenges(n,M,gap=False,a=1,b=1,c=1,color_scheme='standard',dot_width=0,dpi=100,edge_width=0,
+                  gap_width=0,path_width=0,shape='regular'):
     A = int(round(a*n))
     B = int(round(b*n))
     C = int(round(c*n))
-    edge = float(edge)
 
     margin = 1
     fig, ax = subplots(dpi=dpi)
-    if skewed_grid:
+    if shape == 'regular':
+        ax.set_xlim(-margin,2*(B+C)+margin)
+        ax.set_ylim(-B-margin,2*A+C+margin)
+        ax.set_aspect(2/(3**0.5), adjustable='box')
+    elif shape == 'skewed':
         ax.set_xlim(-margin,2*(B+C)+margin)
         ax.set_ylim(-margin,2*(A+C)+margin)
         ax.set_aspect('equal')
     else:
-        ax.set_xlim(-margin,2*(B+C)+margin)
-        ax.set_ylim(-B-margin,2*A+C+margin)
-        ax.set_aspect(2/(3**0.5), adjustable='box')
+        print('Shape not recognized.')
+        raise
     ax.axis('off')
 
-
-
-    if paths:
-        N = len(M)
-        color = _set_color(coloring,'hexagon',True)
-            
+    if path_width > 0:
+        color = _set_color(color_scheme,'hexagon',True)
         
-        if edge >0:
-            P,L = compute_hexagon_data(M,A,B,C,skewed_grid,False)
-            ax.add_collection(PolyCollection(P,facecolor = 'None',edgecolor='k',linewidth=edge))
+        if edge_width > 0:
+            P,L = compute_hexagon_data(M,A,B,C,shape=='regular',False)
+            ax.add_collection(PolyCollection(P,facecolor = 'None',edgecolor='k',linewidth=edge_width))
 
-        P,L = compute_hexagon_data(M,A,B,C,skewed_grid,True)
+        P,L = compute_hexagon_data(M,A,B,C,shape=='regular',True)
         I = L<2
         P0 = P[I]
         L0 = L[I]
-        ax.add_collection(LineCollection(P0,colors=color[L0],linewidths=paths,zorder=1))
+        ax.add_collection(LineCollection(P0,colors=color[L0],linewidths=path_width,zorder=1))
 
-        if dots:
-            ax.scatter(P0[:,0,0],P0[:,0,1],c= color[L0],s=10*dots,zorder=2)
-            ax.scatter(P0[:,1,0],P0[:,1,1],c= color[L0],s=10*dots,zorder=2)
+        if dot_width > 0:
+            ax.scatter(P0[:,0,0],P0[:,0,1],c=color[L0],linewidth=dot_width,zorder=2)
+            ax.scatter(P0[:,1,0],P0[:,1,1],c=color[L0],linewidth=dot_width,zorder=2)
 
-        if show_gap:
+        if gap_width > 0:
             points_gap_lines = []
             size_gap = gap.shape[0]
             for i1 in range(size_gap):
                 x = int(2*gap[i1][0])
-                if skewed_grid:
-                    y1 = int(2*gap[i1][1])
-                    y2 = int(2*gap[i1][2])
-                else:
+                if shape == 'regular':
                     y1 = int(2*gap[i1][1]-0.5*x)
                     y2 = int(2*gap[i1][2]-0.5*x)
+                else:
+                    y1 = int(2*gap[i1][1])
+                    y2 = int(2*gap[i1][2])
                 points_gap_lines.append([[x,y1],[x,y2]])
-            ax.add_collection(LineCollection(points_gap_lines, colors='r', linewidths=paths))
+            ax.add_collection(LineCollection(points_gap_lines, colors='r', linewidths=gap_width))
 
-        if edge == 0:
-            if skewed_grid:
-                ax.add_collection(LineCollection([[(0,0),(0,2*A)],[(0,2*A),(2*C,2*(A+C))],[(2*C,2*(A+C)),(2*(B+C),2*(A+C))],
-                                                [(2*(B+C),2*(A+C)),(2*(B+C),2*C)],[(2*(B+C),2*C),(2*B,0)],[(2*B,0),(0,0)]],
-                                                colors=(0,0,0),linewidths=0.5*paths))
-            else:
+        if edge_width == 0:
+            if shape == 'regular':
                 ax.add_collection(LineCollection([[(0,0),(0,2*A)],[(0,2*A),(2*C,2*A+C)],[(2*C,2*A+C),(2*(B+C),2*A-B+C)],
                                                 [(2*(B+C),2*A-B+C),(2*(B+C),-B+C)],[(2*(B+C),-B+C),(2*B,-B)],[(2*B,-B),(0,0)]],
-                                                colors=(0,0,0),linewidths=0.5*paths))
+                                                colors=(0,0,0),linewidths=0.5*path_width))
+            else:
+                ax.add_collection(LineCollection([[(0,0),(0,2*A)],[(0,2*A),(2*C,2*(A+C))],[(2*C,2*(A+C)),(2*(B+C),2*(A+C))],
+                                                [(2*(B+C),2*(A+C)),(2*(B+C),2*C)],[(2*(B+C),2*C),(2*B,0)],[(2*B,0),(0,0)]],
+                                                colors=(0,0,0),linewidths=0.5*path_width))
     else:
-
-            
-        color = _set_color(coloring,'hexagon',False)
-
-        P,C = compute_hexagon_data(M,A,B,C,skewed_grid,False)
-        ax.add_collection(PolyCollection(P,facecolor = color[C],edgecolor='k',linewidth=edge))
+        color = _set_color(color_scheme,'hexagon',False)
+        P,C = compute_hexagon_data(M,A,B,C,shape=='regular',False)
+        ax.add_collection(PolyCollection(P,facecolor = color[C],edgecolor='k',linewidth=edge_width))
     return fig
