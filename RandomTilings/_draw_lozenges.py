@@ -1,8 +1,8 @@
 from numpy import zeros,array,int8,int64,ndarray
 from matplotlib.collections import LineCollection,PolyCollection
-from ._draw_aux import _set_color
-from numba import njit
 from matplotlib.pyplot import subplots
+from numba import njit
+from ._draw_aux import _set_color
 
 @njit("(int64, int64, int64, int64, int64)",cache=True)
 def in_hexagon(x,y,A,B,C):
@@ -167,7 +167,7 @@ def draw_lozenges(M,A,B,C,gap=False,color_scheme='standard',dot_width=0,dpi=100,
                     y2 = int(2*gap[i1][2])
                 points_gap_lines.append([[x,y1],[x,y2]])
             ax.add_collection(LineCollection(points_gap_lines,colors='r',linewidths=gap_width))
-        ax.add_collection(LineCollection(P0,colors=color[L0],linewidths=path_width,zorder=1))
+        ax.add_collection(LineCollection(P,colors=color[L],linewidths=path_width,zorder=1)) # BREAKS
     else:
         ax.add_collection(PolyCollection(P,facecolor=color[L],edgecolor='k',linewidth=edge_width))
     return fig

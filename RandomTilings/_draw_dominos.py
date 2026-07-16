@@ -1,8 +1,7 @@
 from numpy import zeros,array,int8,float64,ndarray,arange
-from matplotlib.collections import PolyCollection, LineCollection
+from matplotlib.collections import LineCollection,PolyCollection
 from matplotlib.pyplot import subplots
 from numba import njit
-
 from ._draw_aux import _set_color
 
 @njit("(Array(int8, 2, 'C', False, aligned=True),bool,bool,bool)",cache=True)
