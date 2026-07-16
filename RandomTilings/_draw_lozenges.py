@@ -1,4 +1,4 @@
-from numpy import round, array, int64,int8,zeros,arange
+from numpy import zeros,array,int8,int64,ndarray
 from matplotlib.collections import LineCollection,PolyCollection
 from ._draw_aux import _set_color
 from numba import njit
@@ -19,13 +19,13 @@ def in_hexagon(x,y,A,B,C):
 
 @njit("(int64, int64)",cache=True)
 def type_of_lozenge(x,y):
-    # 'path up'
+    # path up
     if x%2 == 1 and y%2 == 0:
         return 0
-    # 'path down'
+    # path down
     elif x%2 == 1 and y%2 == 1:
         return 1
-    # 'free of path'
+    # free of path
     else:
         return 2
 
@@ -105,18 +105,15 @@ def compute_hexagon_data(M,A,B,C,regular,paths):
                 k+=1
     return P,L
 
-def draw_lozenges(n,M,gap=False,a=1,b=1,c=1,color_scheme='standard',dot_width=0,dpi=100,edge_width=0,
+def draw_lozenges(M,A,B,C,gap=False,color_scheme='standard',dot_width=0,dpi=100,edge_width=0,
                   gap_width=0,path_width=0,shape='regular'):
-    A = int(round(a*n))
-    B = int(round(b*n))
-    C = int(round(c*n))
-
+    # Set matplotlib figure layout
+    fig,ax = subplots(dpi=dpi)
     margin = 1
-    fig, ax = subplots(dpi=dpi)
     if shape == 'regular':
         ax.set_xlim(-margin,2*(B+C)+margin)
         ax.set_ylim(-B-margin,2*A+C+margin)
-        ax.set_aspect(2/(3**0.5), adjustable='box')
+        ax.set_aspect(2/(3**0.5))
     elif shape == 'skewed':
         ax.set_xlim(-margin,2*(B+C)+margin)
         ax.set_ylim(-margin,2*(A+C)+margin)
@@ -126,24 +123,38 @@ def draw_lozenges(n,M,gap=False,a=1,b=1,c=1,color_scheme='standard',dot_width=0,
         raise
     ax.axis('off')
 
-    if path_width > 0:
-        color = _set_color(color_scheme,'hexagon',True)
-        
-        if edge_width > 0:
-            P,L = compute_hexagon_data(M,A,B,C,shape=='regular',False)
-            ax.add_collection(PolyCollection(P,facecolor = 'None',edgecolor='k',linewidth=edge_width))
+    # Set color scheme
+    color = _set_color(color_scheme,'hexagon',path_width>0)
 
-        P,L = compute_hexagon_data(M,A,B,C,shape=='regular',True)
-        I = L<2
-        P0 = P[I]
-        L0 = L[I]
-        ax.add_collection(LineCollection(P0,colors=color[L0],linewidths=path_width,zorder=1))
+    # Check for gap
+    isgap = type(gap) == ndarray and gap.shape[1]==3
+
+    # Computing data
+    P,L = compute_hexagon_data(M,A,B,C,shape=='regular',path_width>0)
+
+    # Plotting
+    if path_width > 0:
+        if edge_width > 0:
+            P0,_ = compute_hexagon_data(M,A,B,C,shape=='regular',False)
+            ax.add_collection(PolyCollection(P0,facecolor='None',edgecolor='k',linewidth=edge_width))
+        else:
+            if shape == 'regular':
+                ax.add_collection(LineCollection([[(0,0),(0,2*A)],[(0,2*A),(2*C,2*A+C)],[(2*C,2*A+C),(2*(B+C),2*A-B+C)],
+                                                [(2*(B+C),2*A-B+C),(2*(B+C),-B+C)],[(2*(B+C),-B+C),(2*B,-B)],[(2*B,-B),(0,0)]],
+                                                colors=(0,0,0),linewidths=0.5*path_width))
+            else:
+                ax.add_collection(LineCollection([[(0,0),(0,2*A)],[(0,2*A),(2*C,2*(A+C))],[(2*C,2*(A+C)),(2*(B+C),2*(A+C))],
+                                                [(2*(B+C),2*(A+C)),(2*(B+C),2*C)],[(2*(B+C),2*C),(2*B,0)],[(2*B,0),(0,0)]],
+                                                colors=(0,0,0),linewidths=0.5*path_width))
 
         if dot_width > 0:
-            ax.scatter(P0[:,0,0],P0[:,0,1],c=color[L0],linewidth=dot_width,zorder=2)
-            ax.scatter(P0[:,1,0],P0[:,1,1],c=color[L0],linewidth=dot_width,zorder=2)
+            I  = L<2
+            P0 = P[I]
+            L0 = L[I]
+            ax.scatter(P0[:,0,0],P0[:,0,1],color=color[L0],linewidth=dot_width,zorder=2)
+            ax.scatter(P0[:,1,0],P0[:,1,1],color=color[L0],linewidth=dot_width,zorder=2)
 
-        if gap_width > 0:
+        if isgap and gap_width > 0:
             points_gap_lines = []
             size_gap = gap.shape[0]
             for i1 in range(size_gap):
@@ -155,19 +166,8 @@ def draw_lozenges(n,M,gap=False,a=1,b=1,c=1,color_scheme='standard',dot_width=0,
                     y1 = int(2*gap[i1][1])
                     y2 = int(2*gap[i1][2])
                 points_gap_lines.append([[x,y1],[x,y2]])
-            ax.add_collection(LineCollection(points_gap_lines, colors='r', linewidths=gap_width))
-
-        if edge_width == 0:
-            if shape == 'regular':
-                ax.add_collection(LineCollection([[(0,0),(0,2*A)],[(0,2*A),(2*C,2*A+C)],[(2*C,2*A+C),(2*(B+C),2*A-B+C)],
-                                                [(2*(B+C),2*A-B+C),(2*(B+C),-B+C)],[(2*(B+C),-B+C),(2*B,-B)],[(2*B,-B),(0,0)]],
-                                                colors=(0,0,0),linewidths=0.5*path_width))
-            else:
-                ax.add_collection(LineCollection([[(0,0),(0,2*A)],[(0,2*A),(2*C,2*(A+C))],[(2*C,2*(A+C)),(2*(B+C),2*(A+C))],
-                                                [(2*(B+C),2*(A+C)),(2*(B+C),2*C)],[(2*(B+C),2*C),(2*B,0)],[(2*B,0),(0,0)]],
-                                                colors=(0,0,0),linewidths=0.5*path_width))
+            ax.add_collection(LineCollection(points_gap_lines,colors='r',linewidths=gap_width))
+        ax.add_collection(LineCollection(P0,colors=color[L0],linewidths=path_width,zorder=1))
     else:
-        color = _set_color(color_scheme,'hexagon',False)
-        P,C = compute_hexagon_data(M,A,B,C,shape=='regular',False)
-        ax.add_collection(PolyCollection(P,facecolor = color[C],edgecolor='k',linewidth=edge_width))
+        ax.add_collection(PolyCollection(P,facecolor=color[L],edgecolor='k',linewidth=edge_width))
     return fig

@@ -178,7 +178,7 @@ def Aztec(n,w=[[1]],gap=False):
                          
     Output: RT (random tiling) object.
     
-    Example:
+    Basic example:
     A = RT.Aztec(100)
     A.shuffle()
     A.plot()
@@ -202,7 +202,7 @@ def Aztec(n,w=[[1]],gap=False):
         desc+= 'gap = False'
 
     def plot_Aztec(M,**kwargs):
-        return draw_dominos(n,M,gap=gap,**kwargs)
+        return draw_dominos(M,gap=gap,**kwargs)
 
     w  = w.astype(complex)
     w1 = ascontiguousarray(w.real)
@@ -254,7 +254,7 @@ def Hexagon(n,w=[[1],[1]],a=1,b=1,c=1,gap=False):
                          
     Output: RT (random tiling) object.
     
-    Example:
+    Basic example:
     H = RT.Hexagon(100)
     H.shuffle()
     H.plot()
@@ -277,7 +277,10 @@ def Hexagon(n,w=[[1],[1]],a=1,b=1,c=1,gap=False):
         desc+= 'gap = False'
 
     def plot_Hexagon(M,**kwargs):
-        return draw_lozenges(n,M,gap=gap,**kwargs)
+        A = int(round(a*n))
+        B = int(round(b*n))
+        C = int(round(c*n))
+        return draw_lozenges(M,A,B,C,gap=gap,**kwargs)
 
     w = w.astype(complex)
     w = ascontiguousarray(w)
