@@ -4,7 +4,7 @@ from matplotlib.pyplot import subplots
 from numba import njit
 from ._draw_aux import _set_color
 
-@njit("(int64, int64, int64, int64, int64)",cache=True)
+@njit("(int64, int64, int64, int64, int64)",cache=True,inline="always")
 def in_hexagon(x,y,A,B,C):
     if x <= 2*min(B,C):
         return y >= 1 and y <= 2*A+x-1
@@ -17,7 +17,7 @@ def in_hexagon(x,y,A,B,C):
     else:
         return False
 
-@njit("(int64, int64)",cache=True)
+@njit("(int64, int64)",cache=True,inline="always")
 def type_of_lozenge(x,y):
     # path up
     if x%2 == 1 and y%2 == 0:
@@ -29,7 +29,7 @@ def type_of_lozenge(x,y):
     else:
         return 2
 
-@njit("(int64, int64, bool)",cache=True)
+@njit("(int64, int64, bool)",cache=True,inline="always")
 def points_lozenge(x,y,regular):
     type_loz = type_of_lozenge(x,y)
     if type_loz == 0:
@@ -67,7 +67,7 @@ def points_lozenge(x,y,regular):
                        [x  ,y-1]])
     return A,type_loz
 
-@njit("(int64, int64, bool)",cache=True)
+@njit("(int64, int64, bool)",cache=True,inline="always")
 def points_path(x,y,regular):
     type_loz = type_of_lozenge(x,y)
     if type_loz == 0:
@@ -105,8 +105,8 @@ def compute_hexagon_data(M,A,B,C,regular,paths):
                 k+=1
     return P,L
 
-def draw_lozenges(M,A,B,C,gap=False,color_scheme='standard',dot_width=0,dpi=100,edge_width=0,
-                  gap_width=0,path_width=0,shape='regular'):
+def draw_lozenges(M,A,B,C,gap=False,edge_width=0,path_width=0,dot_width=0,gap_width=0,
+                  shape='regular',color_scheme='standard',dpi=100):
     # Set matplotlib figure layout
     fig,ax = subplots(dpi=dpi)
     margin = 1

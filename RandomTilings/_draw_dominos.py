@@ -117,8 +117,8 @@ def compute_domino_data(M,diamond,aztec_gray,paths):
         C  = C[I]
     return P,C
 
-def draw_dominos(M,gap=False,color_scheme='standard',dot_width=0,dpi=100,edge_width=0,
-                 gap_width=0,orientation='diamond',path_width=0):
+def draw_dominos(M,gap=False,edge_width=0,path_width=0,dot_width=0,gap_width=0,
+                 orientation='diamond',color_scheme='standard',dpi=100):
     N = M.shape[0]
     n = N//2
 

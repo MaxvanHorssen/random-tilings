@@ -3,7 +3,7 @@ from numba import njit
 
 @njit(["(int64, int64, Array(float64, 2, 'C', False, aligned=True))",
  "(int64, int64, Array(int64, 2, 'C', False, aligned=True))",
- "(int64, int64, Array(complex128, 2, 'C', False, aligned=True))"],cache=True)
+ "(int64, int64, Array(complex128, 2, 'C', False, aligned=True))"],cache=True,inline="always")
 def is_there_no_neighbour(x,y,W):
     N = W.shape[0]
     x_ind = N-(y-1)
@@ -29,7 +29,7 @@ def is_there_no_neighbour(x,y,W):
             else:
                 return W[x_ind-1,x-2] == 0 and W[x_ind-2,x-2] == 0 and W[x_ind,x-1] == 0
 
-@njit("(int64, int64, int64, int64, int64)",cache=True)
+@njit("(int64, int64, int64, int64, int64)",cache=True,inline="always")
 def is_in_hexagon(x2,y2,A,B,C):
     if x2 <= 2*min(B,C):
         return y2 >= 1 and y2 <= 2*A+x2-1
@@ -42,11 +42,11 @@ def is_in_hexagon(x2,y2,A,B,C):
     else:
         return False
 
-@njit("(int64, int64, int64, int64, int64)",cache=True)
+@njit("(int64, int64, int64, int64, int64)",cache=True,inline="always")
 def is_in_up_right_corner(x3,y3,A,B,C):
     return (x3 >= 2*(B+C) and y3 >= 2*(A+C))
 
-@njit("(int64, Array(complex128, 2, 'C', False, aligned=True), int64, float64, float64)",cache=True)
+@njit("(int64, Array(complex128, 2, 'C', False, aligned=True), int64, float64, float64)",cache=True,inline="always")
 def weight_hexagon(n,w,a,b,c):
     A = int(round(a*n))
     B = int(round(b*n))

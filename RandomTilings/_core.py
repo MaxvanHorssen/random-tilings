@@ -2,36 +2,6 @@ from numpy import zeros,int8
 from numpy.random import random
 from numba import njit,prange
 
-@njit("(Array(int8, 2, 'C', False, aligned=True), int64, int64, int64)",cache=True,inline="always")
-def no_neighbor(M,k,m,n):
-    N = M.shape[0]
-    A = N//2-1-k  
-    
-    if M[A+2*m,A+2*n]+M[A+2*m+1,A+2*n]+M[A+2*m,A+2*n+1]+M[A+2*m+1,A+2*n+1]>0:
-        return False
-
-    if n==0:
-        tmp_w = True
-        tmp_e = (M[A+2*m,A+2*(n+1)]+M[A+2*m+1,A+2*(n+1)])==0
-    elif n==k:
-        tmp_w = (M[A+2*m,A+2*n-1]+M[A+2*m+1,A+2*n-1])==0
-        tmp_e = True
-    else:
-        tmp_w = (M[A+2*m,A+2*n-1]+M[A+2*m+1,A+2*n-1])==0
-        tmp_e = (M[A+2*m,A+2*(n+1)]+M[A+2*m+1,A+2*(n+1)])==0
-
-    if m==0:
-        tmp_n = True
-        tmp_s = (M[A+2*(m+1),A+2*n]+M[A+2*(m+1),A+2*n+1])==0
-    elif m==k:
-        tmp_n = (M[A+2*m-1,A+2*n]+M[A+2*m-1,A+2*n+1])==0
-        tmp_s = True
-    else:
-        tmp_n = (M[A+2*m-1,A+2*n]+M[A+2*m-1,A+2*n+1])==0
-        tmp_s = (M[A+2*(m+1),A+2*n]+M[A+2*(m+1),A+2*n+1])==0
-
-    return tmp_s and tmp_e and tmp_w and tmp_n
-
 @njit("(float64, float64, float64, float64, int32, int32, int32, int32)",cache=True,inline="always")
 def update(w,x,y,z,ew,ex,ey,ez):
     overflow = False
@@ -131,7 +101,7 @@ def reduce_weight(W,E):
     return C,E,overflow
 
 @njit("(Array(float64, 2, 'C', False, aligned=True),Array(int32, 2, 'C', False, aligned=True))",
-      cache=True,parallel = True)
+      cache=True,parallel=True)
 def shuffling(C0,E0):
     C = C0.copy()
     E = E0.copy()
@@ -205,7 +175,6 @@ def shuffling(C0,E0):
                         tmp_n = (M[I00-1,I01]+M[I00-1,I11])==0
                         tmp_s = (M[I00+1,I01]+M[I00+1,I11])==0
                     no_neighbor = tmp_s and tmp_e and tmp_w and tmp_n
-                # end checking for neighbor
 
                 if no_neighbor:
                     w,x,y,z     = C[I00,I01],C[I00,I11],C[I10,I01],C[I10,I11]
