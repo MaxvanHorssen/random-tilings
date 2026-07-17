@@ -5,7 +5,7 @@ This file records the notable changes made to `RandomTilings`.
 Changes completed after the latest official release will be listed here.
 
 ## Version 1.0.0 — First official release
-*Released on 16.07.2026* 
+*Released on 17.07.2026* 
 
 Version 1.0.0 is the first official release of `RandomTilings`. It introduces a new implementation of the core algorithms and replaces the previous function-based workflow with an object-oriented interface. The new implementation reduces the memory complexity from cubic to quadratic, resulting in significantly better memory efficiency and improved runtime performance.
 
