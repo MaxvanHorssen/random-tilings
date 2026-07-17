@@ -1,6 +1,6 @@
 from ._weight_aztec import weight_aztec
 from ._weight_hexagon import weight_hexagon
-from ._core import reduce_weight,shuffling
+from ._core import reduce_weight,reduce_weight_log,shuffling,shuffling_log
 from ._draw_dominos import draw_dominos
 from ._draw_lozenges import draw_lozenges
 from numpy import round,array2string,ndarray,ascontiguousarray,int32,array
@@ -11,14 +11,16 @@ class Config:
     Overview:
     ---------
      - "warnings" enables or disables printed warnings.
-     - "mpl_backend" sets the backend for displaying Matplotlib plots. Options: "inline" (default) and "interactive".'''
+     - "mpl_backend" sets the backend for displaying Matplotlib plots.
+       Options: "inline" (default) and "interactive".'''
     warnings     = True
     mpl_backend  = 'inline'
+    log_variant  = False
 
     def __setattr__(self, name, value):
         if name == 'warnings':
             if self.warnings == False and value:
-                msg  = 'Warnings regarding numerical instabilities are now disabled!'
+                msg = 'Warnings regarding numerical instabilities are now disabled!'
                 print(msg)
             object.__setattr__(self,name,bool(value))
         elif name == 'mpl_backend':
@@ -87,7 +89,11 @@ class RandomTiling:
     def shuffle(self):
         '''Samples the Random Tiling object according to the underlying model.'''
         if self.__closed == False:
-            self.__M,of = shuffling(self.__C,self.__E)
+            if config.log_variant:
+                self.__M = shuffling_log(self.__C,self.__E)
+                of = False
+            else:
+                self.__M,of = shuffling(self.__C,self.__E)
             if of and config.warnings:
                 print('Numerical instability detected: Overflow/Underflow!')
         else:
@@ -98,19 +104,34 @@ class RandomTiling:
 
         Inputs:
         -------
-         - "edge_width" is the thickness of the border around the domino tiles. By default, edge_width = 0, resulting in no border being drawn.
-         - "path_width" displays the non-intersecting path system when set to True. By default, path_width = False.
-         - "dot_width" is the thickness of the dots visualizing the particles associated with the non-intersecting path system. This option only takes effect when path_width = True. By default, dot_width = 0.
+         - "edge_width" is the thickness of the border around the domino tiles. By default,
+            edge_width = 0, resulting in no border being drawn.
+         - "path_width" displays the non-intersecting path system when set to True. By default,
+            path_width = False.
+         - "dot_width" is the thickness of the dots visualizing the particles associated with the
+            non-intersecting path system. This option only takes effect when path_width = True.
+            By default, dot_width = 0.
          - "gap_width" is the thickness of the lines visualizing the gaps. By default, gap_width = 0.
          - "dpi" is the resolution of the figure. By default, dpi = 100.
 
          Aztec specific:
-         - "orientation" gives the orientation of the figure, for which two options are available: "diamond" and "square". By default, orientation = "diamond".
-         - "color_scheme" is the color scheme of the figure. Five built-in options are available: "standard", "alternative", "gray", "aztec gray" (custom-made for the 2x2-periodic Aztec diamond), and "tropical". Custom color schemes are specified as [(r,g,b),(r,g,b),(r,g,b),(r,g,b)], where the four RGB triples correspond to the colors of the north, west, south, and east dominoes, respectively. Each color component r, g, and b may be given either as an integer in {0,...,255} or as a real number in [0,1]. By default, color_scheme = "standard".
+         - "orientation" gives the orientation of the figure, for which two options are available:
+           "diamond" and "square". By default, orientation = "diamond".
+         - "color_scheme" is the color scheme of the figure. Five built-in options are available:
+           "standard", "alternative", "gray", "aztec gray" (custom-made for the 2x2-periodic Aztec diamond),
+           and "tropical". Custom color schemes are specified as [(r,g,b),(r,g,b),(r,g,b),(r,g,b)],
+           where the four RGB triples correspond to the colors of the north, west, south, and east dominoes,
+           respectively. Each color component r, g, and b may be given either as an integer in {0,...,255}
+           or as a real number in [0,1]. By default, color_scheme = "standard".
 
          Hexagon specific:
-         - "shape" gives the shape of the figure, for which two options are available: "regular" and "skewed". By default, shape = "regular".
-         - "color_scheme" is the color scheme of the figure. Three built-in options are available: "standard", "alternative", and "gray". Custom color schemes are specified as [(r,g,b),(r,g,b),(r,g,b)], where the three RGB triples correspond to the colors of the left, right, horizontal lozenges, respectively. Each color component r, g, and b may be given either as an integer in {0,...,255} or as a real number in [0,1]. By default, color_scheme = "standard".'''
+         - "shape" gives the shape of the figure, for which two options are available: "regular" and "skewed".
+         By default, shape = "regular".
+         - "color_scheme" is the color scheme of the figure. Three built-in options are available: "standard",
+           "alternative", and "gray". Custom color schemes are specified as [(r,g,b),(r,g,b),(r,g,b)], where
+           the three RGB triples correspond to the colors of the left, right, horizontal lozenges, respectively.
+           Each color component r, g, and b may be given either as an integer in {0,...,255} or as a real number
+           in [0,1]. By default, color_scheme = "standard".'''
         if self.__closed == False:
             if type(self.__M) == type(None):
                 print('The Random Tiling object needs to be shuffled first!')
@@ -120,7 +141,8 @@ class RandomTiling:
             print('The Random Tiling object is already closed; create a new instance!')
 
     def close(self):
-        '''This routine closes the current Random Tiling object and deletes all its attributes; freeing the memory it used.'''
+        '''This routine closes the current Random Tiling object and deletes all its attributes; freeing the memory
+           it used.'''
         self.__closed = True
         self.__desc = 'Closed Random Tiling object'
         self.__C = None
@@ -146,8 +168,12 @@ def Aztec(n,w=[[1]],gap=False):
 
     Input:
     ------
-     - "w" is the weighting on the edge graph, which can be a matrix of any size. We adopt the convention that the weighting is assigned on the bottom left corner of the Aztec diamond, and is then periodically extended to the full Aztec diamond. By default, the uniform weighting is used, i.e., w = [[1]].
-     - "gap" must be of the form [[t1,x1,y1],[t2,x2,y2],...,[tm,xm,ym]], which means that at each time tj, there is a vertical gap from xj to yj. The points must satisfy tj in {0,1,...,2n} and xj,yj must be integers. It is allowed to take xj = yj, which represents a single point xj.         
+     - "w" is the weighting on the edge graph, which can be a matrix of any size. We adopt the convention
+       that the weighting is assigned on the bottom left corner of the Aztec diamond, and is then periodically
+       extended to the full Aztec diamond. By default, the uniform weighting is used, i.e., w = [[1]].
+     - "gap" must be of the form [[t1,x1,y1],[t2,x2,y2],...,[tm,xm,ym]], which means that at each time tj,
+     there is a vertical gap from xj to yj. The points must satisfy tj in {0,1,...,2n} and xj,yj must be
+     integers. It is allowed to take xj = yj, which represents a single point xj.         
 
     Output:
     -------
@@ -202,7 +228,11 @@ def Aztec(n,w=[[1]],gap=False):
                     if 1 <= N-(yWest-1) and N-(yWest-1) <= N and 1 <= xWest and xWest <= N:
                         W[end-yWest,xWest-1] = 0
 
-    C,E,of = reduce_weight(W,E)
+    if config.log_variant:
+        C,E = reduce_weight_log(W,E)
+        of = False
+    else:
+        C,E,of = reduce_weight(W,E)
     if of and config.warnings:
         print('Numerical instability detected: Overflow/Underflow!')
 
@@ -217,9 +247,15 @@ def Hexagon(n,w=[[1],[1]],a=1,b=1,c=1,gap=False):
 
     Input:
     ------
-     - "w" is the weighting on the edge graph, which can be a matrix of any size. For a pxq periodic weighting, w must be a matrix of size 2pxq. We adopt the convention that the weighting is assigned on the bottom left corner of the hexagon, and is then periodically extended to the full hexagon. By default, the uniform weighting is used, i.e., w = [[1],[1]].
-     - "a", "b", and "c" are the side length multipliers, i.e., the hexagon will be of size (an)x(bn)x(cn). By default, a = b = c = 1.
-     - "gap" must be of the form [[t1,x1,y1],[t2,x2,y2],...,[tm,xm,ym]], which means that at each time tj, there is a vertical gap from xj to yj. The points must satisfy tj in {0,1,...,2n} and xj,yj must be half-integers. It is allowed to take xj = yj, which represents a single point xj.
+     - "w" is the weighting on the edge graph, which can be a matrix of any size. For a pxq periodic weighting,
+       w must be a matrix of size 2pxq. We adopt the convention that the weighting is assigned on the bottom
+       left corner of the hexagon, and is then periodically extended to the full hexagon. By default, the
+       uniform weighting is used, i.e., w = [[1],[1]].
+     - "a", "b", and "c" are the side length multipliers, i.e., the hexagon will be of size (an)x(bn)x(cn).
+     By default, a = b = c = 1.
+     - "gap" must be of the form [[t1,x1,y1],[t2,x2,y2],...,[tm,xm,ym]], which means that at each time tj,
+     there is a vertical gap from xj to yj. The points must satisfy tj in {0,1,...,2n} and xj,yj must be
+     half-integers. It is allowed to take xj = yj, which represents a single point xj.
 
     Output:
     -------
@@ -274,7 +310,11 @@ def Hexagon(n,w=[[1],[1]],a=1,b=1,c=1,gap=False):
 
     E = ascontiguousarray(W.imag).astype(int32)
     W = ascontiguousarray(W.real)
-    C,E,of = reduce_weight(W,E)
+    if config.log_variant:
+        C,E = reduce_weight_log(W,E)
+        of = False
+    else:
+        C,E,of = reduce_weight(W,E)
     if of and config.warnings:
         print('Numerical instability detected: Overflow/Underflow!')
 

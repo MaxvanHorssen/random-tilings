@@ -46,7 +46,7 @@ def is_in_hexagon(x2,y2,A,B,C):
 def is_in_up_right_corner(x3,y3,A,B,C):
     return (x3 >= 2*(B+C) and y3 >= 2*(A+C))
 
-@njit("(int64, Array(complex128, 2, 'C', False, aligned=True), int64, float64, float64)",cache=True,inline="always")
+@njit("(int64, Array(complex128, 2, 'C', False, aligned=True), int64, float64, float64)",cache=True)
 def weight_hexagon(n,w,a,b,c):
     A = int(round(a*n))
     B = int(round(b*n))
