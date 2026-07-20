@@ -1,7 +1,7 @@
-Random tilings
+Random Tilings
 ==============
 
-This project provides the Python package `RandomTilings`, which makes it possible to generate random tilings of the Aztec diamond and the hexagon for doubly periodic weightings. This package is a Python adaptation of the MATLAB program `MatlabTilings` by Christophe Charlier, which is based on the domino shuffling algorithm as described in [arXiv:0111034](https://arxiv.org/abs/math/0111034). The original MATLAB implementation can be found on his [homepage](https://sites.google.com/view/cchar/home). We are grateful to Christophe Charlier for allowing us to make this package publicly available.
+This project provides the Python package `RandomTilings`, which makes it possible to generate random tilings of the Aztec diamond and the hexagon for doubly periodic weightings. This package is a Python adaptation of the MATLAB program `MatlabTilings` by Christophe Charlier, which is based on the [domino shuffling algorithm](https://arxiv.org/abs/math/0111034). The original MATLAB implementation can be found on his [webpage](https://sites.google.com/view/cchar/random-tilings). We are grateful to Christophe Charlier for allowing us to make this package publicly available.
 
 <p align="center">
 <img width="383" height="389" alt="image" src="https://github.com/user-attachments/assets/b3d983e2-561e-461c-8fda-cfd6c933a24d" />
@@ -9,19 +9,13 @@ This project provides the Python package `RandomTilings`, which makes it possibl
 </p>
 
 ## The New Version
-The new version introduces an optimized implementation of the core algorithms. The main improvement is a reduction in memory complexity from cubic to quadratic, resulting in significantly better memory efficiency and improved runtime performance. In addition, the structure of the main object has changed: instead of using a single function call to generate a plot, the new version follows an object-oriented design. This makes it possible to adjust plot settings or create new instances of a random tiling without recomputing everything from scratch. The previous implementation remains available in the GitHub branch `version-0`, but future development and support will focus on the main branch.
+The new version introduces an optimized implementation of the core algorithms. The main improvement is a reduction in memory complexity from cubic to quadratic, resulting in significantly better memory efficiency, and improved runtime performance. In addition, the structure of the main object has changed: instead of using a single function call to generate a plot, the new version follows an object-oriented design. This makes it possible to adjust plot settings or create new instances of a random tiling without recomputing everything from scratch. The previous implementation remains available in the GitHub branch [`version-0`](https://github.com/MaxvanHorssen/random-tilings/tree/version-0). Future development and support will focus on the main branch.
 
 ## Documentation
-
-The documentation for the routines provided by `RandomTilings` is available in `Documentation for RandomTilings`.
-Not every feature of the original MATLAB implementation is currently available in the Python package. The documentation therefore focuses on the available Python interface and explains the differences from `MatlabTilings`.
-For a more comprehensive description of the original implementation, consult the `MatlabTilings help file`. Keep in mind that some of the functionality described there has not been implemented in `RandomTilings`.
-Additional examples are provided in the Jupyter notebook `Examples – How to use`.
-
+The documentation for the routines provided by `RandomTilings` is available in [`Documentation`](https://github.com/MaxvanHorssen/random-tilings/blob/main/Documentation.pdf). Not every feature of the original MATLAB implementation is currently available in the Python package. For a more comprehensive description of the original MATLAB implementation, consult the [`MatlabTilings help file`](https://drive.google.com/file/d/119W_nJ6amyrWDoBiC_xm9X1kyvuhz4L2/view). Additional examples are provided in the Jupyter notebooks [`Basic examples`](https://github.com/MaxvanHorssen/random-tilings/blob/main/Basic%20examples.ipynb) and [`Advanced examples`](https://github.com/MaxvanHorssen/random-tilings/blob/main/Advanced%20examples.ipynb).
 
 ## Acknowledgments
-We would like to express our sincere gratitude to Christophe Charlier for providing the original Matlab implementation and for giving us permission to release this Python adaptation of his program.
-
+We would like to express our sincere gratitude to Christophe Charlier for providing the original Matlab implementation and for allowing us to release this Python adaptation of his program.
 
 ## How to get started
 The package `RandomTilings` requires to install the following packages:
@@ -32,41 +26,39 @@ The package `RandomTilings` requires to install the following packages:
  - Numba
  - tqdm
 
-Therefore, make sure that these libraries are installed beforehand. Once the installation is successful, you only have to copy the folder `RandomTilings` in the same folder as your Python script or Jupyter notebook, and you can import the routines by simply calling:
+Make sure that these libraries are installed beforehand. Once the installation is successful, you only have to copy the folder `RandomTilings` in the same folder as your Python script or Jupyter notebook. Then, you can import the routines by simply calling:
 ```python
  import RandomTilings as RT
 ```
-Note that by importing all necessary subroutines will be compiled by `Numba.njit`, therefore the first time importing this library might take some time.
+Note that by importing all necessary subroutines will be compiled by `Numba.njit`, therefore importing the package for the first time might take some time.
 
-## Example - How to use
+## How to use the package
 Using `RandomTilings`, we can generate random tilings of both the Aztec diamond and the hexagon. The workflow is the same in both cases.
-First, we create an `RT` object, short for “random tiling.” This object represents the random model from which individual tilings can be sampled. Once the model, or equivalently the `RT` object, has been constructed, we can draw random tilings from it and then plot them.
-In the literature, the procedure of sampling a random tiling from the model is usually called *shuffling*, which is why the corresponding method uses this name.
-The typical workflow is:
+First, we create an `RT` object, short for “random tiling”. This object represents the model from which individual random tilings can be sampled. Once the model, or equivalently the `RT` object, has been constructed, we can sample random tilings from it and then plot them.
 
+The typical workflow is:
 1. Create the model.
 2. Repeat:
    - Shuffle the model to generate a random tiling.
    - Plot the resulting tiling.
 3. Close the model.
 
+## Minimal examples
+
 **Random Tilings of the Aztec Diamond**     
 ```python
 import RandomTilings as RT
-n = 100
-A = RT.Aztec(n)
+A = RT.Aztec(100)
 A.shuffle()
 A.plot()
 ```
-The steps `shuffle` and `plot` can then be repeated. The `matplotlib.Figure` object corresponding to the plot can be accessed via `A.fig`. Once finished you can use `A.close()` to close the `RT` object and free memory.
+The steps `shuffle` and `plot` can then be repeated. The `matplotlib.figure` object corresponding to the plot can be accessed via `A.fig`. Once finished, the object can be deleted by calling `A.close()`, which frees the memory used by the `RT` object.
 
-
-**Random Tilings of a Hexagon**     
-To create a random tiling of the hexagon call:
+**Random Tilings of the Hexagon**
 ```python
 import RandomTilings as RT
-n = 100
-H = RT.Hexagon(n)
+H = RT.Hexagon(100)
 H.shuffle()
 H.plot()
+H.close()
 ```
