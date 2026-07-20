@@ -1,36 +1,6 @@
-from numpy import zeros,int8
+from numpy import zeros,int8,exp,log,inf
 from numpy.random import random
 from numba import njit,prange
-
-@njit("(Array(int8, 2, 'C', False, aligned=True), int64, int64, int64)",cache=True,inline="always")
-def no_neighbor(M,k,m,n):
-    N = M.shape[0]
-    A = N//2-1-k  
-    
-    if M[A+2*m,A+2*n]+M[A+2*m+1,A+2*n]+M[A+2*m,A+2*n+1]+M[A+2*m+1,A+2*n+1]>0:
-        return False
-
-    if n==0:
-        tmp_w = True
-        tmp_e = (M[A+2*m,A+2*(n+1)]+M[A+2*m+1,A+2*(n+1)])==0
-    elif n==k:
-        tmp_w = (M[A+2*m,A+2*n-1]+M[A+2*m+1,A+2*n-1])==0
-        tmp_e = True
-    else:
-        tmp_w = (M[A+2*m,A+2*n-1]+M[A+2*m+1,A+2*n-1])==0
-        tmp_e = (M[A+2*m,A+2*(n+1)]+M[A+2*m+1,A+2*(n+1)])==0
-
-    if m==0:
-        tmp_n = True
-        tmp_s = (M[A+2*(m+1),A+2*n]+M[A+2*(m+1),A+2*n+1])==0
-    elif m==k:
-        tmp_n = (M[A+2*m-1,A+2*n]+M[A+2*m-1,A+2*n+1])==0
-        tmp_s = True
-    else:
-        tmp_n = (M[A+2*m-1,A+2*n]+M[A+2*m-1,A+2*n+1])==0
-        tmp_s = (M[A+2*(m+1),A+2*n]+M[A+2*(m+1),A+2*n+1])==0
-
-    return tmp_s and tmp_e and tmp_w and tmp_n
 
 @njit("(float64, float64, float64, float64, int32, int32, int32, int32)",cache=True,inline="always")
 def update(w,x,y,z,ew,ex,ey,ez):
@@ -72,7 +42,7 @@ def update(w,x,y,z,ew,ex,ey,ez):
     Ixy = ex+ey
     Iwz = ew+ez
 
-    if Ixy>Iwz:
+    if Ixy > Iwz:
         tmp = w*z
         if tmp == 0:
            return 1/w,1,1,1/z,-ew,ey-Iwz-1,ex-Iwz-1,-ez,True
@@ -80,7 +50,7 @@ def update(w,x,y,z,ew,ex,ey,ez):
             return 1/w,1,1,1/z,-ew,ey-Iwz+1,ex-Iwz+1,-ez,True
         else:
             return 1/w,y/tmp,x/tmp,1/z,-ew,ey-Iwz,ex-Iwz,-ez,overflow
-    elif Ixy<Iwz:
+    elif Ixy < Iwz:
         tmp = x*y
         if tmp == 0:
             return 1,1/x,1/y,1,ez-Ixy-1,-ex,-ey,ew-Ixy-1,True
@@ -123,7 +93,7 @@ def reduce_weight(W,E):
                 I00,I01,I10,I11 = k+2*m,k+2*n,k+2*m+1,k+2*n+1
                 w ,x ,y ,z  = C[I00,I01],C[I00,I11],C[I10,I01],C[I10,I11]
                 ew,ex,ey,ez = E[I00,I01],E[I00,I11],E[I10,I01],E[I10,I11]
-                
+
                 w,x,y,z,ew,ex,ey,ez,of = update(w,x,y,z,ew,ex,ey,ez)
                 C[I00,I01],C[I00,I11],C[I10,I01],C[I10,I11] = w,x,y,z
                 E[I00,I01],E[I00,I11],E[I10,I01],E[I10,I11] = ew,ex,ey,ez
@@ -131,7 +101,7 @@ def reduce_weight(W,E):
     return C,E,overflow
 
 @njit("(Array(float64, 2, 'C', False, aligned=True),Array(int32, 2, 'C', False, aligned=True))",
-      cache=True,parallel = True)
+      cache=True,parallel=True)
 def shuffling(C0,E0):
     C = C0.copy()
     E = E0.copy()
@@ -151,15 +121,15 @@ def shuffling(C0,E0):
     else:
         M[A,A],M[A+1,A+1]= 0,0
         M[A,A+1],M[A+1,A]= 1,1
-    
+
     for k in range(1,N//2):
         A = N//2-1-k   
 
-        # destruction + flip (+ reconstruct)
+        # destruction + flip (+ reconstruction)
         for m in range(k+1):
             for n in range(k+1):
                 I00,I01,I10,I11 = A+2*m,A+2*n,A+2*m+1,A+2*n+1
-                # reconstruct
+                # reconstruction
                 w,x,y,z     = C[I00,I01],C[I00,I11],C[I10,I01],C[I10,I11]
                 ew,ex,ey,ez = E[I00,I01],E[I00,I11],E[I10,I01],E[I10,I11]
                 
@@ -178,7 +148,7 @@ def shuffling(C0,E0):
 
         for m in range(k+1):
             for n in range(k+1):
-                # check for neighbor
+                # start checking for neighbor
                 A = N//2-1-k  
                 I00,I01,I10,I11 = A+2*m,A+2*n,A+2*m+1,A+2*n+1
                 
@@ -220,3 +190,147 @@ def shuffling(C0,E0):
                         M[I00,I01],M[I10,I11]= 0,0
                         M[I00,I11],M[I10,I01]= 1,1
     return M,overflow
+
+###############
+# Log variant #
+###############
+
+@njit("(float64,float64)",cache=True,inline="always")
+def logaddexp(a,b):
+    return max(a,b)+log(1+exp(-abs(a-b)))
+
+@njit("(float64,float64,float64,float64,int32,int32,int32,int32)",cache=True,inline="always")
+def update_log(w,x,y,z,ew,ex,ey,ez):
+    Ixy = ex+ey
+    Iwz = ew+ez
+    if Ixy>Iwz:
+        d           = w+z 
+        w,x,y,z     = -w,y-d,x-d,-z
+        ew,ex,ey,ez = -ew,ey-Iwz,ex-Iwz,-ez
+    elif Ixy<Iwz:
+        d           = x+y
+        w,x,y,z     = z-d,-x,-y,w-d
+        ew,ex,ey,ez = ez-Ixy,-ex,-ey,ew-Ixy
+    else:
+        d           = logaddexp(w+z,x+y)
+        w,x,y,z     = z-d, y-d, x-d, w-d
+        ew,ex,ey,ez = ez-Ixy,ey-Ixy,ex-Ixy,ew-Ixy
+    return w,x,y,z,ew,ex,ey,ez
+
+@njit("(float64,float64,float64,float64,int32,int32,int32,int32)",cache=True,inline="always")
+def comp_prop_log(w,x,y,z,ew,ex,ey,ez):
+    Ixy = ex+ey
+    Iwz = ew+ez
+    if Ixy>Iwz:
+        return 0
+    elif Ixy < Iwz:
+        return -inf
+    tmp = logaddexp(w+z,x+y)
+    if tmp == -inf:
+        return -log(2)
+    else:
+        return w+z-tmp
+
+@njit("(Array(float64, 2, 'C', False, aligned=True),Array(int32, 2, 'C', False, aligned=True))",cache=True,parallel=True)
+def reduce_weight_log(W,E):
+    K = W.shape[0]//2
+    C = log(W.copy() + (W==0))
+    E+= 1*(W == 0)
+    for k in range(K-1):
+        for m in prange(K-k):
+            for n in prange(K-k):
+                I00,I01,I10,I11 = k+2*m,k+2*n,k+2*m+1,k+2*n+1
+                w ,x ,y ,z  = C[I00,I01],C[I00,I11],C[I10,I01],C[I10,I11]
+                ew,ex,ey,ez = E[I00,I01],E[I00,I11],E[I10,I01],E[I10,I11]
+
+                w,x,y,z,ew,ex,ey,ez = update_log(w,x,y,z,ew,ex,ey,ez)
+                C[I00,I01],C[I00,I11],C[I10,I01],C[I10,I11] = w,x,y,z
+                E[I00,I01],E[I00,I11],E[I10,I01],E[I10,I11] = ew,ex,ey,ez
+    return C,E
+
+@njit("(Array(float64, 2, 'C', False, aligned=True),Array(int32, 2, 'C', False, aligned=True))",
+      cache=True,parallel=True)
+def shuffling_log(C0,E0):
+    C = C0.copy()
+    E = E0.copy()
+    N = C.shape[0]
+    M = zeros((N,N),dtype=int8)
+
+    # initiate
+    A = N//2-1
+    w,x,y,z     = C[A,A],C[A,A+1],C[A+1,A],C[A+1,A+1]
+    ew,ex,ey,ez = E[A,A],E[A,A+1],E[A+1,A],E[A+1,A+1]
+    prob = comp_prop_log(w,x,y,z,ew,ex,ey,ez)
+    if log(random())<prob:
+        M[A,A],M[A+1,A+1]= 1,1
+        M[A,A+1],M[A+1,A]= 0,0
+    else:
+        M[A,A],M[A+1,A+1]= 0,0
+        M[A,A+1],M[A+1,A]= 1,1
+
+    for k in range(1,N//2):
+        A = N//2-1-k   
+
+        # destruction + flip (+ reconstruction)
+        for m in range(k+1):
+            for n in range(k+1):
+                I00,I01,I10,I11 = A+2*m,A+2*n,A+2*m+1,A+2*n+1
+                # reconstruction
+                w,x,y,z     = C[I00,I01],C[I00,I11],C[I10,I01],C[I10,I11]
+                ew,ex,ey,ez = E[I00,I01],E[I00,I11],E[I10,I01],E[I10,I11]
+                
+                w,x,y,z,ew,ex,ey,ez = update_log(w,x,y,z,ew,ex,ey,ez)
+                C[I00,I01],C[I00,I11],C[I10,I01],C[I10,I11] = w,x,y,z
+                E[I00,I01],E[I00,I11],E[I10,I01],E[I10,I11] = ew,ex,ey,ez
+
+                # destruction + flip
+                tmp = M[I00,I01]+M[I10,I01]+M[I00,I11]+M[I10,I11]
+                if tmp>1:
+                    M[I00,I01],M[I10,I01],M[I00,I11],M[I10,I11]=0,0,0,0
+                elif tmp == 1:
+                    M[I00,I01],M[I10,I11]=M[I10,I11],M[I00,I01]
+                    M[I00,I11],M[I10,I01]=M[I10,I01],M[I00,I11]
+
+        for m in range(k+1):
+            for n in range(k+1):
+                # start checking for neighbor
+                A = N//2-1-k  
+                I00,I01,I10,I11 = A+2*m,A+2*n,A+2*m+1,A+2*n+1
+                
+                if M[I00,I01]+M[I10,I01]+M[I00,I11]+M[I10,I11]>0:
+                    no_neighbor = False
+                else:
+                    if n==0:
+                        tmp_w = True
+                        tmp_e = (M[I00,I11+1]+M[I10,I11+1])==0
+                    elif n==k:
+                        tmp_w = (M[I00,I01-1]+M[I10,I01-1])==0
+                        tmp_e = True
+                    else:
+                        tmp_w = (M[I00,I01-1]+M[I10,I01-1])==0
+                        tmp_e = (M[I00,I11+1]+M[I10,I11+1])==0
+
+                    if m==0:
+                        tmp_n = True
+                        tmp_s = (M[I10+1,I01]+M[I10+1,I11])==0
+                    elif m==k:
+                        tmp_n = (M[I00-1,I01]+M[I00-1,I11])==0
+                        tmp_s = True
+                    else:
+                        tmp_n = (M[I00-1,I01]+M[I00-1,I11])==0
+                        tmp_s = (M[I00+1,I01]+M[I00+1,I11])==0
+                    no_neighbor = tmp_s and tmp_e and tmp_w and tmp_n
+                # end checking for neighbor
+
+                if no_neighbor:
+                    w,x,y,z     = C[I00,I01],C[I00,I11],C[I10,I01],C[I10,I11]
+                    ew,ex,ey,ez = E[I00,I01],E[I00,I11],E[I10,I01],E[I10,I11]
+                    prob  = comp_prop_log(w,x,y,z,ew,ex,ey,ez)
+
+                    if log(random())<prob:
+                        M[I00,I01],M[I10,I11]= 1,1
+                        M[I00,I11],M[I10,I01]= 0,0
+                    else:
+                        M[I00,I01],M[I10,I11]= 0,0
+                        M[I00,I11],M[I10,I01]= 1,1
+    return M
