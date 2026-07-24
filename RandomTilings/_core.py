@@ -42,7 +42,7 @@ def update(w,x,y,z,ew,ex,ey,ez):
     Ixy = ex+ey
     Iwz = ew+ez
 
-    if Ixy>Iwz:
+    if Ixy > Iwz:
         tmp = w*z
         if tmp == 0:
            return 1/w,1,1,1/z,-ew,ey-Iwz-1,ex-Iwz-1,-ez,True
@@ -50,7 +50,7 @@ def update(w,x,y,z,ew,ex,ey,ez):
             return 1/w,1,1,1/z,-ew,ey-Iwz+1,ex-Iwz+1,-ez,True
         else:
             return 1/w,y/tmp,x/tmp,1/z,-ew,ey-Iwz,ex-Iwz,-ez,overflow
-    elif Ixy<Iwz:
+    elif Ixy < Iwz:
         tmp = x*y
         if tmp == 0:
             return 1,1/x,1/y,1,ez-Ixy-1,-ex,-ey,ew-Ixy-1,True
@@ -125,11 +125,11 @@ def shuffling(C0,E0):
     for k in range(1,N//2):
         A = N//2-1-k   
 
-        # destruction + flip (+ reconstruct)
+        # destruction + flip (+ reconstruction)
         for m in range(k+1):
             for n in range(k+1):
                 I00,I01,I10,I11 = A+2*m,A+2*n,A+2*m+1,A+2*n+1
-                # reconstruct
+                # reconstruction
                 w,x,y,z     = C[I00,I01],C[I00,I11],C[I10,I01],C[I10,I11]
                 ew,ex,ey,ez = E[I00,I01],E[I00,I11],E[I10,I01],E[I10,I11]
                 
@@ -233,9 +233,8 @@ def comp_prop_log(w,x,y,z,ew,ex,ey,ez):
 
 @njit("(Array(float64, 2, 'C', False, aligned=True),Array(int32, 2, 'C', False, aligned=True))",cache=True,parallel=True)
 def reduce_weight_log(W,E):
-    K = W.shape[0] // 2
-    C = W.copy() + (W==0)
-    C = log(C)
+    K = W.shape[0]//2
+    C = log(W.copy() + (W==0))
     E+= 1*(W == 0)
     for k in range(K-1):
         for m in prange(K-k):
@@ -272,11 +271,11 @@ def shuffling_log(C0,E0):
     for k in range(1,N//2):
         A = N//2-1-k   
 
-        # destruction + flip (+ reconstruct)
+        # destruction + flip (+ reconstruction)
         for m in range(k+1):
             for n in range(k+1):
                 I00,I01,I10,I11 = A+2*m,A+2*n,A+2*m+1,A+2*n+1
-                # reconstruct
+                # reconstruction
                 w,x,y,z     = C[I00,I01],C[I00,I11],C[I10,I01],C[I10,I11]
                 ew,ex,ey,ez = E[I00,I01],E[I00,I11],E[I10,I01],E[I10,I11]
                 

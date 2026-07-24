@@ -3,6 +3,7 @@ from ._weight_hexagon import weight_hexagon
 from ._core import reduce_weight,reduce_weight_log,shuffling,shuffling_log
 from ._draw_dominos import draw_dominos
 from ._draw_lozenges import draw_lozenges
+from ._log_partition_function import log_partition_function,log_partition_function_log
 from numpy import round,array2string,ndarray,ascontiguousarray,int32,array
     
 class Config:
@@ -63,6 +64,8 @@ class RandomTiling:
     ------------------
      - "shuffle" samples the Random Tiling object according to the underlying model.
      - "plot" creates a figure containing the plot of the sampled random tiling.
+     - "log_partition_function" computes the log partition function of the Random Tiling object
+       according to the underlying model.
      - "close" closes the Random Tiling object.
      - "get_edge_matrix" returns a copy of the underlying edge matrix.'''
 
@@ -87,7 +90,7 @@ class RandomTiling:
         del(self.__M)
 
     def shuffle(self):
-        '''Samples the Random Tiling object according to the underlying model.'''
+        '''This routine samples the Random Tiling object according to the underlying model.'''
         if self.__closed == False:
             if config.log_variant:
                 self.__M = shuffling_log(self.__C,self.__E)
@@ -139,6 +142,22 @@ class RandomTiling:
                 self.fig = self.__plot(self.__M,**args)
         else:
             print('The Random Tiling object is already closed; create a new instance!')
+
+    def log_partition_function(self):
+        '''This routine computes the log partition function of the Random Tiling object
+           according to the underlying model.'''
+        log_zn = None
+        if self.__closed == False:
+            if config.log_variant:
+                log_zn = log_partition_function_log(self.__C,self.__E)
+                of = False
+            else:
+                log_zn,of = log_partition_function(self.__C,self.__E)
+            if of and config.warnings:
+                print('Numerical instability detected: Overflow/Underflow!')
+        else:
+            print('This Random Tiling object is already closed.')
+        return log_zn
 
     def close(self):
         '''This routine closes the current Random Tiling object and deletes all its attributes; freeing the memory
