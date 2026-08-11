@@ -4,6 +4,12 @@ This file records the notable changes made to `RandomTilings`.
 ## Unreleased
 Changes completed after the latest official release will be listed here.
 
+## Version 1.1.0
+*Released on 24.07.2026* 
+
+### Added
+* Added the `log_partition_function()` method for computing the log partition function.
+
 ## Version 1.0.0 — First official release
 *Released on 17.07.2026* 
 
