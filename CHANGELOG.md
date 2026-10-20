@@ -5,13 +5,13 @@ This file records the notable changes made to `RandomTilings`.
 Changes completed after the latest official release will be listed here.
 
 ## Version 1.1.2
-*Released on 21.10.2026*
+*Released on 20.10.2026*
+
 ### Added
 * Added a periodic version of the shuffling algorithm for the Aztec diamond. It is an experimental feature and can be enabled using `config.periodic_aztec=True`.
 
 ### Fixes
 * Fixed a minor bug in the detection of numerical instabilities during weight reduction. The previous implementation occasionally failed to detect numerical instabilities due to parallelization.
-
 
 ## Version 1.1.1
 *Released on 20.10.2026* 
