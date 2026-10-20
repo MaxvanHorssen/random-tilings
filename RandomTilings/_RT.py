@@ -1,9 +1,9 @@
 from ._weight_aztec import weight_aztec
 from ._weight_hexagon import weight_hexagon
-from ._core import reduce_weight,reduce_weight_log,shuffling,shuffling_log
+from ._core import reduce_weight,reduce_weight_log,shuffling,shuffling_log,shuffling_periodic,PropTower
 from ._draw_dominos import draw_dominos
 from ._draw_lozenges import draw_lozenges
-from numpy import round,array2string,ndarray,ascontiguousarray,int32,array
+from numpy import round,array2string,ndarray,ascontiguousarray,int32,array,log
     
 class Config:
     '''Configuration object for specifying global settings.
@@ -13,9 +13,10 @@ class Config:
      - "warnings" enables or disables printed warnings.
      - "mpl_backend" sets the backend for displaying Matplotlib plots.
        Options: "inline" (default) and "interactive".'''
-    warnings     = True
-    mpl_backend  = 'inline'
-    log_variant  = False
+    warnings       = True
+    mpl_backend    = 'inline'
+    log_variant    = False
+    periodic_aztec = False
 
     def __setattr__(self, name, value):
         if name == 'warnings':
@@ -93,7 +94,10 @@ class RandomTiling:
     def shuffle(self):
         '''This routine samples the Random Tiling object according to the underlying model.'''
         if self.__closed == False:
-            if config.log_variant:
+            if config.periodic_aztec:
+                self.__M = shuffling_periodic(self.__C)
+                of = False
+            elif config.log_variant:
                 self.__M = shuffling_log(self.__C,self.__E)
                 of = False
             else:
@@ -209,6 +213,26 @@ def Aztec(n,w=[[1]],gap=False):
 
     def plot_Aztec(M,**kwargs):
         return draw_dominos(M,gap=gap,**kwargs)
+
+
+    
+
+    if config.periodic_aztec:
+        w  = w.astype(complex)
+        w1 = ascontiguousarray(w.real)
+        w2 = ascontiguousarray(w.imag)
+        W = w1.copy()
+        E = w2.astype(int32)
+
+        E += (W == 0).astype(int32)
+        W[W == 0] = 1.0
+
+        if config.log_variant:
+            W = log(W)
+        PT,of = PropTower(n,W,E,config.log_variant)
+        if of and config.warnings:
+            print('Numerical instability detected: Overflow/Underflow!')
+        return RandomTiling(desc,PT,None,None,plot_Aztec)
 
     w  = w.astype(complex)
     w1 = ascontiguousarray(w.real)
