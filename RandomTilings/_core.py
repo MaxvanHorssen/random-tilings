@@ -81,24 +81,41 @@ def comp_prop(w,x,y,z,ew,ex,ey,ez):
     else:
         return w*z/(w*z+x*y),False
 
+@njit("(float64,float64,float64,float64,int32,int32,int32,int32)",cache=True,inline="always")
+def count(w,x,y,z,ew,ex,ey,ez):
+    Ixy = ex+ey
+    Iwz = ew+ez
+    if Iwz > Ixy:
+        return log(x*y) + Ixy*1j
+    elif Iwz < Ixy:
+        return log(w*z) + Iwz*1j
+    else:
+        return log(w*z + x*y) + Iwz*1j
+
 @njit("(Array(float64, 2, 'C', False, aligned=True),Array(int32, 2, 'C', False, aligned=True))",cache=True,parallel=True)
 def reduce_weight(W,E):
     K = W.shape[0]//2
     C = W.copy()+(W==0)
     E+= 1*(W == 0)
     overflow = False
+    log_zn = 0
     for k in range(K-1):
         for m in prange(K-k):
             for n in prange(K-k):
                 I00,I01,I10,I11 = k+2*m,k+2*n,k+2*m+1,k+2*n+1
-                w ,x ,y ,z  = C[I00,I01],C[I00,I11],C[I10,I01],C[I10,I11]
+                w,x,y,z     = C[I00,I01],C[I00,I11],C[I10,I01],C[I10,I11]
                 ew,ex,ey,ez = E[I00,I01],E[I00,I11],E[I10,I01],E[I10,I11]
-
+                log_zn += count(w,x,y,z,ew,ex,ey,ez)
                 w,x,y,z,ew,ex,ey,ez,of = update(w,x,y,z,ew,ex,ey,ez)
                 C[I00,I01],C[I00,I11],C[I10,I01],C[I10,I11] = w,x,y,z
                 E[I00,I01],E[I00,I11],E[I10,I01],E[I10,I11] = ew,ex,ey,ez
                 overflow = overflow or of
-    return C,E,overflow
+    k = K-1
+    I00,I01,I10,I11 = k,k,k+1,k+1
+    w,x,y,z     = C[I00,I01],C[I00,I11],C[I10,I01],C[I10,I11]
+    ew,ex,ey,ez = E[I00,I01],E[I00,I11],E[I10,I01],E[I10,I11]
+    log_zn += count(w,x,y,z,ew,ex,ey,ez)
+    return C,E,log_zn,overflow
 
 @njit("(Array(float64, 2, 'C', False, aligned=True),Array(int32, 2, 'C', False, aligned=True))",
       cache=True,parallel=True)
@@ -231,22 +248,39 @@ def comp_prop_log(w,x,y,z,ew,ex,ey,ez):
     else:
         return w+z-tmp
 
+@njit("(float64,float64,float64,float64,int32,int32,int32,int32)",cache=True,inline="always")
+def count_log(w,x,y,z,ew,ex,ey,ez):
+    Ixy = ex+ey
+    Iwz = ew+ez
+    if Iwz > Ixy:
+        return x+y + Ixy*1j
+    elif Iwz < Ixy:
+        return w+z + Iwz*1j
+    else:
+        return logaddexp(w+z,x+y) + Iwz*1j
+
 @njit("(Array(float64, 2, 'C', False, aligned=True),Array(int32, 2, 'C', False, aligned=True))",cache=True,parallel=True)
 def reduce_weight_log(W,E):
     K = W.shape[0]//2
-    C = log(W.copy() + (W==0))
+    C = log(W.copy()+(W==0))
     E+= 1*(W == 0)
+    log_zn = 0
     for k in range(K-1):
         for m in prange(K-k):
             for n in prange(K-k):
                 I00,I01,I10,I11 = k+2*m,k+2*n,k+2*m+1,k+2*n+1
-                w ,x ,y ,z  = C[I00,I01],C[I00,I11],C[I10,I01],C[I10,I11]
+                w,x,y,z     = C[I00,I01],C[I00,I11],C[I10,I01],C[I10,I11]
                 ew,ex,ey,ez = E[I00,I01],E[I00,I11],E[I10,I01],E[I10,I11]
-
+                log_zn += count_log(w,x,y,z,ew,ex,ey,ez)
                 w,x,y,z,ew,ex,ey,ez = update_log(w,x,y,z,ew,ex,ey,ez)
                 C[I00,I01],C[I00,I11],C[I10,I01],C[I10,I11] = w,x,y,z
                 E[I00,I01],E[I00,I11],E[I10,I01],E[I10,I11] = ew,ex,ey,ez
-    return C,E
+    k = K-1
+    I00,I01,I10,I11 = k,k,k+1,k+1
+    w,x,y,z     = C[I00,I01],C[I00,I11],C[I10,I01],C[I10,I11]
+    ew,ex,ey,ez = E[I00,I01],E[I00,I11],E[I10,I01],E[I10,I11]
+    log_zn += count_log(w,x,y,z,ew,ex,ey,ez)
+    return C,E,log_zn
 
 @njit("(Array(float64, 2, 'C', False, aligned=True),Array(int32, 2, 'C', False, aligned=True))",
       cache=True,parallel=True)

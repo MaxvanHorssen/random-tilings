@@ -3,7 +3,6 @@ from ._weight_hexagon import weight_hexagon
 from ._core import reduce_weight,reduce_weight_log,shuffling,shuffling_log
 from ._draw_dominos import draw_dominos
 from ._draw_lozenges import draw_lozenges
-from ._log_partition_function import log_partition_function,log_partition_function_log
 from numpy import round,array2string,ndarray,ascontiguousarray,int32,array
     
 class Config:
@@ -64,15 +63,16 @@ class RandomTiling:
     ------------------
      - "shuffle" samples the Random Tiling object according to the underlying model.
      - "plot" creates a figure containing the plot of the sampled random tiling.
-     - "log_partition_function" computes the log partition function of the Random Tiling object
-       according to the underlying model.
+     - "get_log_partition_function" gives the log partition function of the Random Tiling object
+       corresponding to the underlying model.
      - "close" closes the Random Tiling object.
      - "get_edge_matrix" returns a copy of the underlying edge matrix.'''
 
-    def __init__(self,desc,C,E,plot):
+    def __init__(self,desc,C,E,log_partition_function,plot):
         self.__desc = desc
         self.__C = C
         self.__E = E
+        self.__log_partition_function = log_partition_function
         self.__plot = plot
         self.__M = None
         self.fig = None
@@ -86,6 +86,7 @@ class RandomTiling:
         del(self.__desc)
         del(self.__C)
         del(self.__E)
+        del(self.__log_partition_function)
         del(self.__plot)
         del(self.__M)
 
@@ -143,21 +144,11 @@ class RandomTiling:
         else:
             print('The Random Tiling object is already closed; create a new instance!')
 
-    def log_partition_function(self):
-        '''This routine computes the log partition function of the Random Tiling object
-           according to the underlying model.'''
-        log_zn = None
+    def get_log_partition_function(self):
         if self.__closed == False:
-            if config.log_variant:
-                log_zn = log_partition_function_log(self.__C,self.__E)
-                of = False
-            else:
-                log_zn,of = log_partition_function(self.__C,self.__E)
-            if of and config.warnings:
-                print('Numerical instability detected: Overflow/Underflow!')
+            return self.__log_partition_function
         else:
-            print('This Random Tiling object is already closed.')
-        return log_zn
+            print('The Random Tiling object is already closed; create a new instance!')
 
     def close(self):
         '''This routine closes the current Random Tiling object and deletes all its attributes; freeing the memory
@@ -248,14 +239,14 @@ def Aztec(n,w=[[1]],gap=False):
                         W[end-yWest,xWest-1] = 0
 
     if config.log_variant:
-        C,E = reduce_weight_log(W,E)
+        C,E,log_partition_function = reduce_weight_log(W,E) # HEREE
         of = False
     else:
-        C,E,of = reduce_weight(W,E)
+        C,E,log_partition_function,of = reduce_weight(W,E) # HEREE
     if of and config.warnings:
         print('Numerical instability detected: Overflow/Underflow!')
 
-    return RandomTiling(desc,C,E,plot_Aztec)
+    return RandomTiling(desc,C,E,log_partition_function,plot_Aztec)
 
 ###########
 # Hexagon #
@@ -330,11 +321,11 @@ def Hexagon(n,w=[[1],[1]],a=1,b=1,c=1,gap=False):
     E = ascontiguousarray(W.imag).astype(int32)
     W = ascontiguousarray(W.real)
     if config.log_variant:
-        C,E = reduce_weight_log(W,E)
+        C,E,log_partition_function = reduce_weight_log(W,E) # HEREE
         of = False
     else:
-        C,E,of = reduce_weight(W,E)
+        C,E,log_partition_function,of = reduce_weight(W,E) # HEREE
     if of and config.warnings:
         print('Numerical instability detected: Overflow/Underflow!')
 
-    return RandomTiling(desc,C,E,plot_Hexagon)
+    return RandomTiling(desc,C,E,log_partition_function,plot_Hexagon)
