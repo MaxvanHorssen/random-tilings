@@ -4,6 +4,15 @@ This file records the notable changes made to `RandomTilings`.
 ## Unreleased
 Changes completed after the latest official release will be listed here.
 
+## Version 1.1.1
+*Released on 20.10.2026* 
+
+### Added
+* Added the `get_log_partition_function()` method. In this new implementation, the log partition function is computed during the weight reduction and stored for later retrieval through this method, avoiding redundant calculations.
+
+### Removed
+* Removed the old `log_partition_function()` method, as its functionality is now handled by `get_log_partition_function()`.
+
 ## Version 1.1.0
 *Released on 24.07.2026* 
 
