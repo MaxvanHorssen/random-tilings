@@ -4,6 +4,10 @@ _color_schemes_A = {'standard' :       array([[1.0,0.0,0.0],
                                        [0.0,1.0,0.0],
                                        [1.0,1.0,0.0],
                                        [0.4,0.4,1.0]]),
+              'white' :         array([[1.0,1.0,1.0],
+                                       [1.0,1.0,1.0],
+                                       [1.0,1.0,1.0],
+                                       [1.0,1.0,1.0]]),
              'alternative' :    array([[ 70/255, 60/255, 75/255],
                                        [ 60/255,120/255,155/255],
                                        [190/255,190/255,140/255],
@@ -28,6 +32,9 @@ _color_schemes_A = {'standard' :       array([[1.0,0.0,0.0],
 _color_schemes_H = {'standard' :       array([[1.0,0.0,0.0],
                                        [0.0,1.0,1.0],
                                        [1.0,1.0,0.0]]),
+             'white' :          array([[1.0,1.0,1.0],
+                                       [1.0,1.0,1.0],
+                                       [1.0,1.0,1.0]]),
              'alternative' :    array([[  5/255, 50/255,100/255],
                                        [120/255,180/255,200/255],
                                        [135/255, 60/255, 35/255]]),
@@ -59,7 +66,7 @@ def _set_color(color_scheme,model,paths):
         color_schemes = _color_schemes_H
     if paths:
         if type(color_scheme)==str and color_scheme.lower()=='standard':
-            return array([[0.4,0.4,1],[0.4,0.4,1],[0.4,0.4,1]])
+            return array([[0.4,0.4,1],[0.4,0.4,1],[0.4,0.4,1],[0,0,0]])
         else:
             return _rgb_wrapper(color_scheme)
     else:
