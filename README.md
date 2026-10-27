@@ -51,6 +51,7 @@ import RandomTilings as RT
 A = RT.Aztec(100)
 A.shuffle()
 A.plot()
+A.close()
 ```
 The steps `shuffle` and `plot` can then be repeated. The `matplotlib.figure` object corresponding to the plot can be accessed via `A.fig`. Once finished, the object can be deleted by calling `A.close()`, which frees the memory used by the `RT` object.
 
