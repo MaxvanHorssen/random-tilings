@@ -8,7 +8,7 @@ Changes completed after the latest official release will be listed here.
 *Released on 27.10.2026*
 
 ### Added
-* Added __version__ attribute to the `RandomTilings` class.
+* Added `__version__` attribute to the `RandomTilings` class.
 * Added `plot_dimers()` method, which adds the dimer configuration corresponding to the sampled random tiling to the existing figure created by `plot()`.
 * Added `plot_paths()` method, which adds the path system corresponding to the sampled random tiling to the existing figure created by `plot()`.
 * Added `Examples Aztec diamond` Jupyter Notebook.
