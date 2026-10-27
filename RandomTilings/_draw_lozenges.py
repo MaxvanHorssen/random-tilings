@@ -144,7 +144,7 @@ def draw_lozenges(M,A,B,C,border_size=0,boundary_size=0,shape='regular',color_sc
                                             colors=(0,0,0),linewidths=boundary_size))
     return fig, shape
 
-def draw_lozenges_dimer(M,A,B,C,fig,shape,line_size=-1,dot_size=-1,dot_border_size=-1):
+def draw_lozenges_dimers(M,A,B,C,fig,shape,line_size=-1,dot_size=-1,dot_border_size=-1):
     N = max(A,B,C)
 
     # Default scaling sizes
@@ -214,9 +214,8 @@ def draw_lozenges_paths(M,A,B,C,fig,shape,path_size=-1,dot_size=-1,gap=False,gap
     if dot_size > 0:
         I  = L<2
         P0 = P[I]
-        L0 = L[I]
-        ax.scatter(P0[:,0,0],P0[:,0,1],color=color[L0],s=dot_size,zorder=2)
-        ax.scatter(P0[:,1,0],P0[:,1,1],color=color[L0],s=dot_size,zorder=2)
+        ax.scatter(P0[:,0,0],P0[:,0,1],color=color[-1],s=dot_size,zorder=2)
+        ax.scatter(P0[:,1,0],P0[:,1,1],color=color[-1],s=dot_size,zorder=2)
     if is_gap and gap_size > 0:
         points_gap_lines = []
         size_gap = gap.shape[0]

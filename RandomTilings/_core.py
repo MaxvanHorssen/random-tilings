@@ -370,7 +370,6 @@ def shuffling_log(C0,E0):
                         M[I00,I11],M[I10,I01]= 1,1
     return M
 
-
 ####################
 # periodic variant #
 ####################
@@ -409,7 +408,6 @@ def update_weight(W,E):
     E1 = E1[:,I1]
     E1 = E1[I2]
     return W1,E1,overflow
-
 
 @njit("(Array(float64, 2, 'C', False, aligned=True),Array(int32, 2, 'C', False, aligned=True))",
       cache=True,inline='always')
@@ -464,12 +462,11 @@ def cProp_log(W,E):
             w,x,y,z     = W[2*m,2*n],W[2*m,2*n+1],W[2*m+1,2*n],W[2*m+1,2*n+1]
             ew,ex,ey,ez = E[2*m,2*n],E[2*m,2*n+1],E[2*m+1,2*n],E[2*m+1,2*n+1]
             P[m,n]      = exp(comp_prop_log(w,x,y,z,ew,ex,ey,ez))
-
     return P
 
 @njit("(int64,Array(float64, 2, 'C', False, aligned=True),Array(int32, 2, 'C', False, aligned=True),bool)",
       cache=True)
-def PropTower(n,W,E,log = False):
+def PropTower(n,W,E,log=False):
     L1,L2 = W.shape
     if L1%2==1:
         W = vstack((W,W))
@@ -494,12 +491,9 @@ def PropTower(n,W,E,log = False):
             W,E,of1 = update_weight(W,E)
             P,of2 = cProp(W,E)
             overflow += of1+of2
-  
+
         PT.append(P)
-        
-
     return List(PT[::-1]), overflow  # FIX: reverse probability tower
-
 
 @njit("(int64, int64, int64, int64, int64)",inline='always',cache=True)
 def idx_correction(Size,WShape1,WShape2,m,n):

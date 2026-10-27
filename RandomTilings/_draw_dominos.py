@@ -181,7 +181,7 @@ def draw_dominos(M,border_size=0,boundary_size=0,orientation='diamond',color_sch
                                             colors=(0,0,0),linewidths=boundary_size))
     return fig, orientation
 
-def draw_dominos_dimer(M,fig,orientation,line_size=-1,dot_size=-1,dot_border_size=-1):
+def draw_dominos_dimers(M,fig,orientation,line_size=-1,dot_size=-1,dot_border_size=-1):
     N = M.shape[0]
     n = N//2
 

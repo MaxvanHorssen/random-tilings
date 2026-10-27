@@ -66,7 +66,10 @@ def _set_color(color_scheme,model,paths):
         color_schemes = _color_schemes_H
     if paths:
         if type(color_scheme)==str and color_scheme.lower()=='standard':
-            return array([[0.4,0.4,1],[0.4,0.4,1],[0.4,0.4,1],[0,0,0]])
+            if model == 'aztec':
+                return array([[0.4,0.4,1],[0.4,0.4,1],[0.4,0.4,1],[0,0,0]])
+            else:
+                return array([[0.4,0.4,1],[0.4,0.4,1],[0,0,0]])
         else:
             return _rgb_wrapper(color_scheme)
     else:

@@ -1,8 +1,8 @@
 from ._weight_aztec import weight_aztec
 from ._weight_hexagon import weight_hexagon
 from ._core import reduce_weight,reduce_weight_log,shuffling,shuffling_log,shuffling_periodic,PropTower
-from ._draw_dominos import draw_dominos,draw_dominos_dimer,draw_dominos_paths
-from ._draw_lozenges import draw_lozenges,draw_lozenges_dimer,draw_lozenges_paths
+from ._draw_dominos import draw_dominos,draw_dominos_dimers,draw_dominos_paths
+from ._draw_lozenges import draw_lozenges,draw_lozenges_dimers,draw_lozenges_paths
 from numpy import round,array2string,ndarray,ascontiguousarray,int32,array,log
     
 class Config:
@@ -64,16 +64,16 @@ class RandomTiling:
     ------------------
      - "shuffle" samples the Random Tiling object according to the underlying model.
      - "plot" creates a figure containing the plot of the sampled random tiling.
-     - "plot_dimer" adds the dimer corresponding to the sampled random tiling to the existing figure created by "plot".
+     - "plot_dimers" adds the dimer configuration corresponding to the sampled random tiling to the existing figure created by "plot".
      - "plot_paths" adds the path system corresponding to the sampled random tiling to the existing figure created by "plot".
      - "get_log_partition_function" returns the log partition function of the Random Tiling object
        corresponding to the underlying model.
-     - "get_figure" returns the figures that is created by the plotting routines.
+     - "get_figure" returns the figure that is created by the plotting routines.
      - "get_perfect_matching" returns a copy of the perfect matching corresponding to the sampled random tiling.
      - "set_perfect_matching" overwrites the perfect matching, which is then used by the plotting routines.
      - "close" closes the Random Tiling object.'''
 
-    def __init__(self,desc,C,E,log_partition_function,plot,plot_dimer,plot_paths,pixel_plot):
+    def __init__(self,desc,C,E,log_partition_function,plot,plot_dimers,plot_paths,pixel_plot):
         self.__desc = desc
         self.__C = C
         self.__E = E
@@ -81,7 +81,7 @@ class RandomTiling:
         self.__plot = plot
         self.__orientation_shape = None
         self.__plot_paths = plot_paths
-        self.__plot_dimer = plot_dimer
+        self.__plot_dimers = plot_dimers
         self.__pixel_plot = pixel_plot
         self.__M = None
         self.__figure = None
@@ -101,7 +101,7 @@ class RandomTiling:
         del(self.__plot)
         del(self.__orientation_shape)
         del(self.__plot_paths)
-        del(self.__plot_dimer)
+        del(self.__plot_dimers)
         del(self.__pixel_plot)
         del(self.__M)
         del(self.__figure)
@@ -128,14 +128,10 @@ class RandomTiling:
 
         Inputs:
         -------
-         - "edge_width" is the thickness of the border around the domino tiles. By default,
-            edge_width = 0, resulting in no border being drawn.
-         - "path_width" displays the non-intersecting path system when set to True. By default,
-            path_width = False.
-         - "dot_width" is the thickness of the dots visualizing the particles associated with the
-            non-intersecting path system. This option only takes effect when path_width = True.
-            By default, dot_width = 0.
-         - "gap_width" is the thickness of the lines visualizing the gaps. By default, gap_width = 0.
+         - "border_size" is the thickness of the border around the domino tiles. By default,
+            border_size = 0, resulting in no border being drawn.
+         - "boundary_size" is the thickness of the boundary around the tiling. By default,
+            boundary_size = 0, resulting in no boundary being drawn.
          - "dpi" is the resolution of the figure. By default, dpi = 100.
 
          Aztec specific:
@@ -164,39 +160,17 @@ class RandomTiling:
         else:
             print('The Random Tiling object is already closed; create a new instance!')
 
-    def plot_dimer(self,**args):
-        '''This routine creates a figure containing the plot of the sampled random tiling.
+    def plot_dimers(self,**args):
+        '''This routine adds the dimer configuration corresponding to the sampled random tiling to the existing figure created by "plot".
 
         Inputs:
         -------
-         - "edge_width" is the thickness of the border around the domino tiles. By default,
-            edge_width = 0, resulting in no border being drawn.
-         - "path_width" displays the non-intersecting path system when set to True. By default,
-            path_width = False.
-         - "dot_width" is the thickness of the dots visualizing the particles associated with the
-            non-intersecting path system. This option only takes effect when path_width = True.
-            By default, dot_width = 0.
-         - "gap_width" is the thickness of the lines visualizing the gaps. By default, gap_width = 0.
-         - "dpi" is the resolution of the figure. By default, dpi = 100.
-
-         Aztec specific:
-         - "orientation" gives the orientation of the figure, for which two options are available:
-           "diamond" and "square". By default, orientation = "diamond".
-         - "color_scheme" is the color scheme of the figure. Five built-in options are available:
-           "standard", "alternative", "gray", "aztec gray" (custom-made for the 2x2-periodic Aztec diamond),
-           and "tropical". Custom color schemes are specified as [(r,g,b),(r,g,b),(r,g,b),(r,g,b)],
-           where the four RGB triples correspond to the colors of the north, west, south, and east dominoes,
-           respectively. Each color component r, g, and b may be given either as an integer in {0,...,255}
-           or as a real number in [0,1]. By default, color_scheme = "standard".
-
-         Hexagon specific:
-         - "shape" gives the shape of the figure, for which two options are available: "regular" and "skewed".
-         By default, shape = "regular".
-         - "color_scheme" is the color scheme of the figure. Three built-in options are available: "standard",
-           "alternative", and "gray". Custom color schemes are specified as [(r,g,b),(r,g,b),(r,g,b)], where
-           the three RGB triples correspond to the colors of the left, right, horizontal lozenges, respectively.
-           Each color component r, g, and b may be given either as an integer in {0,...,255} or as a real number
-           in [0,1]. By default, color_scheme = "standard".'''
+         - "line_size" is the thickness of the dimers in the dimer configuration. By default,
+            a scaling size is implemented.
+         - "dot_size" is the thickness of the dots at both ends of the dimers. By default,
+            a scaling size is implemented.
+         - "dot_border_size" is the thickness of border of the dots at both ends of the dimers.
+            By default, a scaling size is implemented.'''
         if self.__closed == False:
             if type(self.__M) == type(None):
                 print('The Random Tiling object needs to be shuffled first!')
@@ -204,43 +178,20 @@ class RandomTiling:
                 if type(self.__figure) == type(None):
                     print('The Random Tiling object needs to be plotted first!')
                 else:
-                    self.__figure = self.__plot_dimer(self.__M,self.__figure,self.__orientation_shape,**args)
+                    self.__figure = self.__plot_dimers(self.__M,self.__figure,self.__orientation_shape,**args)
         else:
             print('The Random Tiling object is already closed; create a new instance!')
 
     def plot_paths(self,**args):
-        '''This routine creates a figure containing the plot of the sampled random tiling.
+        '''This routine adds the path system corresponding to the sampled random tiling to the existing figure created by "plot".
 
         Inputs:
         -------
-         - "edge_width" is the thickness of the border around the domino tiles. By default,
-            edge_width = 0, resulting in no border being drawn.
-         - "path_width" displays the non-intersecting path system when set to True. By default,
-            path_width = False.
-         - "dot_width" is the thickness of the dots visualizing the particles associated with the
-            non-intersecting path system. This option only takes effect when path_width = True.
-            By default, dot_width = 0.
-         - "gap_width" is the thickness of the lines visualizing the gaps. By default, gap_width = 0.
-         - "dpi" is the resolution of the figure. By default, dpi = 100.
-
-         Aztec specific:
-         - "orientation" gives the orientation of the figure, for which two options are available:
-           "diamond" and "square". By default, orientation = "diamond".
-         - "color_scheme" is the color scheme of the figure. Five built-in options are available:
-           "standard", "alternative", "gray", "aztec gray" (custom-made for the 2x2-periodic Aztec diamond),
-           and "tropical". Custom color schemes are specified as [(r,g,b),(r,g,b),(r,g,b),(r,g,b)],
-           where the four RGB triples correspond to the colors of the north, west, south, and east dominoes,
-           respectively. Each color component r, g, and b may be given either as an integer in {0,...,255}
-           or as a real number in [0,1]. By default, color_scheme = "standard".
-
-         Hexagon specific:
-         - "shape" gives the shape of the figure, for which two options are available: "regular" and "skewed".
-         By default, shape = "regular".
-         - "color_scheme" is the color scheme of the figure. Three built-in options are available: "standard",
-           "alternative", and "gray". Custom color schemes are specified as [(r,g,b),(r,g,b),(r,g,b)], where
-           the three RGB triples correspond to the colors of the left, right, horizontal lozenges, respectively.
-           Each color component r, g, and b may be given either as an integer in {0,...,255} or as a real number
-           in [0,1]. By default, color_scheme = "standard".'''
+         - "path_size" is the thickness of the paths in the non-intersecting path system. By default,
+            a scaling size is implemented.
+         - "dot_size" is the thickness of the dots visualizing the particles associated with the
+            non-intersecting path system. By default, a scaling size is implemented.
+         - "gap_size" is the thickness of the lines visualizing the gaps. By default, gap_width = 0.'''
         if self.__closed == False:
             if type(self.__M) == type(None):
                 print('The Random Tiling object needs to be shuffled first!')
@@ -290,6 +241,7 @@ class RandomTiling:
             self.__M = M.copy()
         else:
             print('The Random Tiling object is already closed; create a new instance!')
+
     def close(self):
         '''This routine closes the current Random Tiling object and deletes all its attributes; freeing the memory
            it used.'''
@@ -300,7 +252,7 @@ class RandomTiling:
         self.__plot = None
         self.__orientation_shape = None
         self.__plot_paths = None
-        self.__plot_dimer = None
+        self.__plot_dimers = None
         self.__pixel_plot = None
         self.__M = None
         self.__figure = None
@@ -347,8 +299,8 @@ def Aztec(n,w=[[1]],gap=False):
     def plot_Aztec(M,**kwargs):
         return draw_dominos(M,**kwargs)
 
-    def plot_Aztec_dimer(M,fig,orientation,**kwargs):
-        return draw_dominos_dimer(M,fig,orientation,**kwargs)
+    def plot_Aztec_dimers(M,fig,orientation,**kwargs):
+        return draw_dominos_dimers(M,fig,orientation,**kwargs)
 
     def plot_Aztec_paths(M,fig,orientation,**kwargs):
         return draw_dominos_paths(M,fig,orientation,gap=gap,**kwargs)
@@ -372,7 +324,7 @@ def Aztec(n,w=[[1]],gap=False):
         PT,of = PropTower(n,W,E,config.log_variant)
         if of and config.warnings:
             print('Numerical instability detected: Overflow/Underflow!')
-        return RandomTiling(desc,PT,None,None,plot_Aztec,plot_Aztec_dimer,plot_Aztec_paths,pixel_plot_Aztec)
+        return RandomTiling(desc,PT,None,None,plot_Aztec,plot_Aztec_dimers,plot_Aztec_paths,pixel_plot_Aztec)
 
     w  = w.astype(complex)
     w1 = ascontiguousarray(w.real)
@@ -410,7 +362,7 @@ def Aztec(n,w=[[1]],gap=False):
     if of and config.warnings:
         print('Numerical instability detected: Overflow/Underflow!')
 
-    return RandomTiling(desc,C,E,log_partition_function,plot_Aztec,plot_Aztec_dimer,plot_Aztec_paths,pixel_plot_Aztec)
+    return RandomTiling(desc,C,E,log_partition_function,plot_Aztec,plot_Aztec_dimers,plot_Aztec_paths,pixel_plot_Aztec)
 
 ###########
 # Hexagon #
@@ -459,11 +411,11 @@ def Hexagon(n,w=[[1],[1]],a=1,b=1,c=1,gap=False):
         C = int(round(c*n))
         return draw_lozenges(M,A,B,C,**kwargs)
 
-    def plot_Hexagon_dimer(M,fig,orientation,**kwargs):
+    def plot_Hexagon_dimers(M,fig,orientation,**kwargs):
         A = int(round(a*n))
         B = int(round(b*n))
         C = int(round(c*n))
-        return draw_lozenges_dimer(M,A,B,C,fig,orientation,**kwargs)
+        return draw_lozenges_dimers(M,A,B,C,fig,orientation,**kwargs)
 
     def plot_Hexagon_paths(M,fig,orientation,**kwargs):
         A = int(round(a*n))
@@ -508,4 +460,4 @@ def Hexagon(n,w=[[1],[1]],a=1,b=1,c=1,gap=False):
     if of and config.warnings:
         print('Numerical instability detected: Overflow/Underflow!')
 
-    return RandomTiling(desc,C,E,log_partition_function,plot_Hexagon,plot_Hexagon_dimer,plot_Hexagon_paths,pixel_plot_Hexagon)
+    return RandomTiling(desc,C,E,log_partition_function,plot_Hexagon,plot_Hexagon_dimers,plot_Hexagon_paths,pixel_plot_Hexagon)
