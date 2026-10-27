@@ -4,6 +4,25 @@ This file records the notable changes made to `RandomTilings`.
 ## Unreleased
 Changes completed after the latest official release will be listed here.
 
+## Version 1.2.0
+*Released on 27.10.2026*
+
+### Added
+* Added __version__ attribute to the `RandomTilings` class.
+* Added `plot_dimers()` method, which adds the dimer configuration corresponding to the sampled random tiling to the existing figure created by `plot()`.
+* Added `plot_paths()` method, which adds the path system corresponding to the sampled random tiling to the existing figure created by `plot()`.
+* Added `Examples Aztec diamond` Jupyter Notebook.
+* Added `Examples Hexagon` Jupyter Notebook.
+* Added `get_figure()` method, which returns a copy of the perfect matching corresponding to the `RandomTilings` object.
+* Added `get_perfect_matching()` method, which overwrites the perfect matching of the `RandomTilings` object.
+* Added `set_perfect_matching()` method
+
+### Changed
+* Changed arguments of `plot()` method.
+
+### Removed
+* Removed `Basic examples` Jupyter Notebook.
+
 ## Version 1.1.2
 *Released on 20.10.2026*
 
