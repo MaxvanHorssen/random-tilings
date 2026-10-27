@@ -4,6 +4,9 @@ This file records the notable changes made to `RandomTilings`.
 ## Unreleased
 Changes completed after the latest official release will be listed here.
 
+### Fixes
+* Fixed a typo in `Examples Hexagon` and `Documentation`.
+
 ## Version 1.2.0
 *Released on 27.10.2026*
 
