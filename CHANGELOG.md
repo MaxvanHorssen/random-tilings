@@ -4,6 +4,9 @@ This file records the notable changes made to `RandomTilings`.
 ## Unreleased
 Changes completed after the latest official release will be listed here.
 
+### Added
+* Added the pixel-plot routine for fast rendering of large tilings.
+
 ### Fixes
 * Fixed a typo in `Examples Hexagon` and `Documentation`.
 
