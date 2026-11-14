@@ -1,6 +1,7 @@
-from numpy import zeros,array,int8,int64,ndarray,stack
+from numpy import zeros,array,int8,uint8,int64,ndarray,stack,asarray
 from matplotlib.collections import LineCollection,PolyCollection
 from matplotlib.pyplot import subplots
+from PIL import Image
 from numba import njit
 from ._draw_aux import _set_color
 
@@ -230,3 +231,104 @@ def draw_lozenges_paths(M,A,B,C,fig,shape,path_size=-1,dot_size=-1,gap=False,gap
             points_gap_lines.append([[x,y1],[x,y2]])
         ax.add_collection(LineCollection(points_gap_lines,colors='r',linewidths=gap_size))
     return fig
+
+##############
+# Pixel Plot #
+##############
+
+_PIXEL_LEFT = array([
+    [0, 0, 0, 1],
+    [0, 1, 1, 1],
+    [1, 1, 1, 1],
+    [1, 1, 1, 1],
+    [1, 1, 1, 0],
+    [1, 0, 0, 0],
+], dtype=bool)
+
+_PIXEL_RIGHT = array([
+    [1, 0, 0, 0],
+    [1, 1, 1, 0],
+    [1, 1, 1, 1],
+    [1, 1, 1, 1],
+    [0, 1, 1, 1],
+    [0, 0, 0, 1],
+], dtype=bool)
+
+_PIXEL_HORIZONTAL = array([
+    [0, 0, 0, 1, 1, 0, 0, 0],
+    [0, 1, 1, 1, 1, 1, 1, 0],
+    [0, 1, 1, 1, 1, 1, 1, 0],
+    [0, 0, 0, 1, 1, 0, 0, 0],
+], dtype=bool)
+
+
+@njit(cache=True)
+def _compute_pixel_hexagon(M, A, B, C):
+    image = zeros((2*(2*A + B + C), 4*(B + C)), dtype=uint8)
+    N = M.shape[0]
+    top = 2*A + C
+
+    for x in range(1, 2*(B + C)):
+        for y in range(1, 2*(A + C)):
+            if not in_hexagon(x, y, A, B, C):
+                continue
+            if M[N - y, x - 1] != 1:
+                continue
+
+            center_y = y - 1 - (x - 1)//2
+
+            if x % 2:
+                if y % 2 == 0:
+                    mask, color = _PIXEL_LEFT, 1
+                else:
+                    mask, color = _PIXEL_RIGHT, 2
+                row = 2*(top - center_y - 2)
+                col = 2*(x - 1)
+            else:
+                mask, color = _PIXEL_HORIZONTAL, 3
+                row = 2*(top - center_y - 1)
+                col = 2*(x - 2)
+
+            for r in range(mask.shape[0]):
+                for c in range(mask.shape[1]):
+                    if mask[r, c]:
+                        image[row + r, col + c] = color
+
+    return image
+
+
+def pixel_hexagon(M, A, B, C, filename, color_scheme='standard'):
+    """Save a regular hexagon tiling as a palette image."""
+    M = asarray(M)
+
+    if M.ndim != 2 or M.shape[0] != M.shape[1]:
+        raise ValueError('M must be a square matrix')
+    if M.dtype.kind not in 'biu':
+        raise TypeError('M must contain integers or booleans')
+
+    for size in (A, B, C):
+        if isinstance(size, bool) or not isinstance(size, (int, int64)):
+            raise TypeError('A, B and C must be integers')
+        if size < 1:
+            raise ValueError('A, B and C must be positive')
+
+    if M.shape[0] < 2*max(B + C, A + C) - 1:
+        raise ValueError('M is too small for the given A, B and C')
+
+    colors = asarray(
+        _set_color(color_scheme, 'hexagon', False),
+        dtype=float,
+    )
+
+    # Background, followed by the three lozenge colours.
+    palette = zeros((256, 3), dtype=uint8)
+    palette[0] = 255
+    palette[1:4] = (
+        colors[:3, :3].clip(0, 1)*255
+    ).round().astype(uint8)
+
+    image = _compute_pixel_hexagon(M, A, B, C)
+
+    img = Image.fromarray(image).convert('P')
+    img.putpalette(palette.ravel().tolist())
+    img.save(filename, bits=2, optimize=True)

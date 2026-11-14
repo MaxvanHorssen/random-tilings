@@ -1,6 +1,7 @@
-from numpy import zeros,array,int8,float64,ndarray,stack,arange
+from numpy import zeros,array,int8,uint8,float64,ndarray,stack,arange,asarray
 from matplotlib.collections import LineCollection,PolyCollection
 from matplotlib.pyplot import subplots
+from PIL import Image, ImageColor
 from numba import njit
 from ._draw_aux import _set_color
 
@@ -266,3 +267,113 @@ def draw_dominos_paths(M,fig,orientation,path_size=-1,dot_size=-1,gap=False,gap_
             points_gap_lines.append([[x,y1],[x,y2]])
         ax.add_collection(LineCollection(points_gap_lines, colors='r', linewidths=gap_size))
     return fig
+
+
+##############
+# Pixel Plot #
+##############
+
+_PIXEL_MASKS = array([
+    [
+        [0, 0, 0, 0, 0, 0],
+        [0, 1, 1, 0, 0, 0],
+        [1, 1, 1, 1, 0, 0],
+        [0, 1, 1, 1, 1, 0],
+        [0, 0, 1, 1, 1, 1],
+        [0, 0, 0, 1, 1, 0],
+    ],
+    [
+        [0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 1, 1, 0],
+        [0, 0, 1, 1, 1, 1],
+        [0, 1, 1, 1, 1, 0],
+        [1, 1, 1, 1, 0, 0],
+        [0, 1, 1, 0, 0, 0],
+    ],
+], dtype=bool)
+
+
+@njit(cache=True)
+def _compute_pixel_aztec(M, diamond, aztec_gray):
+    N = M.shape[0]
+    side = N if diamond else 2*(N + 2)
+    image = zeros((side, side), dtype=uint8)
+
+    for y in range(N):
+        for x in range(N):
+            if M[y, x] != 1:
+                continue
+
+            if aztec_gray:
+                if x % 2:
+                    if y % 2 == 0:  # North
+                        color = 1 + int((x + N - y) % 4 == 3)
+                    else:           # East
+                        color = 3 + int((x - N + y) % 4 == 0)
+                else:
+                    if y % 2:       # South
+                        color = 5 + int((x + N - y) % 4 == 3)
+                    else:           # West
+                        color = 7 + int((x - N + y) % 4 == 0)
+            else:
+                if x % 2:
+                    color = 1 if y % 2 == 0 else 2
+                else:
+                    color = 3 if y % 2 else 4
+
+            if diamond:
+                row = (N - 1 - x + y)//2
+                col = (x + y)//2
+
+                image[row, col] = color
+                if (x + y) % 2:
+                    image[row, col + 1] = color
+                else:
+                    image[row + 1, col] = color
+
+            else:
+                shape = 0 if (x + y) % 2 else 1
+
+                for r in range(6):
+                    for c in range(6):
+                        if _PIXEL_MASKS[shape, r, c]:
+                            image[2*y + r, 2*x + c] = color
+
+    return image
+
+
+def pixel_aztec(M, filename, orientation='square',
+                color_scheme='standard'):
+    """Save an Aztec tiling using a predefined drawing colour scheme."""
+    orientation = orientation.lower()
+    if orientation not in ('square', 'diamond'):
+        raise ValueError("orientation must be 'square' or 'diamond'")
+
+    M = asarray(M)
+    if M.ndim != 2 or M.shape[0] != M.shape[1] or M.shape[0] % 2:
+        raise ValueError('M must be a square matrix with even side length')
+    if M.dtype.kind not in 'biu':
+        raise TypeError('M must contain integers or booleans')
+
+    # Same colour selection as draw_dominos.
+    colors = asarray(
+        _set_color(color_scheme, 'aztec', False),
+        dtype=float64,
+    )
+
+    # Index 0 is the white background; tile colours start at index 1.
+    palette = zeros((256, 3), dtype=uint8)
+    palette[0] = 255
+    palette[1:len(colors) + 1] = (
+        colors[:, :3].clip(0, 1)*255
+    ).round().astype(uint8)
+
+    image = _compute_pixel_aztec(
+        M,
+        orientation == 'diamond',
+        color_scheme == 'aztec gray',
+    )
+
+    img = Image.fromarray(image).convert('P')
+    img.putpalette(palette.ravel().tolist())
+    img.save(filename, bits=4, optimize=True)

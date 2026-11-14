@@ -1,8 +1,8 @@
 from ._weight_aztec import weight_aztec
 from ._weight_hexagon import weight_hexagon
 from ._core import reduce_weight,reduce_weight_log,shuffling,shuffling_log,shuffling_periodic,PropTower
-from ._draw_dominos import draw_dominos,draw_dominos_dimers,draw_dominos_paths
-from ._draw_lozenges import draw_lozenges,draw_lozenges_dimers,draw_lozenges_paths
+from ._draw_dominos import draw_dominos,draw_dominos_dimers,draw_dominos_paths,pixel_aztec
+from ._draw_lozenges import draw_lozenges,draw_lozenges_dimers,draw_lozenges_paths,pixel_hexagon
 from numpy import round,array2string,ndarray,ascontiguousarray,int32,array,log
     
 class Config:
@@ -66,6 +66,7 @@ class RandomTiling:
      - "plot" creates a figure containing the plot of the sampled random tiling.
      - "plot_dimers" adds the dimer configuration corresponding to the sampled random tiling to the existing figure created by "plot".
      - "plot_paths" adds the path system corresponding to the sampled random tiling to the existing figure created by "plot".
+     - "pixel_plot" saves the sampled tiling as a pixel image without creating a figure.
      - "get_log_partition_function" returns the log partition function of the Random Tiling object
        corresponding to the underlying model.
      - "get_figure" returns the figure that is created by the plotting routines.
@@ -203,14 +204,21 @@ class RandomTiling:
         else:
             print('The Random Tiling object is already closed; create a new instance!')
 
-    def pixel_plot(self):
-        if self.__closed == False:
-            if type(self.__M) == type(None):
-                print('The Random Tiling object needs to be shuffled first!')
-            else:
-                self.__figure = self.__pixel_plot(self.__M)
-        else:
+    def pixel_plot(self,filename,**kwargs):
+        """Save the sampled tiling as a pixel image without creating a figure.
+
+        filename is required; use a .png extension for lossless palette output.
+        color_scheme accepts the same palettes as plot (default: 'standard').
+        For Aztec tilings, orientation is 'square' (default) or 'diamond'. 
+        Hexagon tilings use only the regular orientation.No image or figure
+        is returned.
+        """
+        if self.__closed:
             print('The Random Tiling object is already closed; create a new instance!')
+        elif self.__M is None:
+            print('The Random Tiling object needs to be shuffled first!')
+        else:
+            self.__pixel_plot(self.__M,filename=filename,**kwargs)
 
     def get_log_partition_function(self):
         if self.__closed == False:
@@ -305,9 +313,8 @@ def Aztec(n,w=[[1]],gap=False):
     def plot_Aztec_paths(M,fig,orientation,**kwargs):
         return draw_dominos_paths(M,fig,orientation,gap=gap,**kwargs)
 
-    def pixel_plot_Aztec(M):
-        print('This feature is still in development.')
-        return None
+    def pixel_plot_Aztec(M,filename,orientation='square',color_scheme='standard'):
+        pixel_aztec(M,filename=filename,orientation=orientation,color_scheme=color_scheme)
 
     if config.periodic_aztec:
         w  = w.astype(complex)
@@ -423,9 +430,11 @@ def Hexagon(n,w=[[1],[1]],a=1,b=1,c=1,gap=False):
         C = int(round(c*n))
         return draw_lozenges_paths(M,A,B,C,fig,orientation,gap=gap,**kwargs)
 
-    def pixel_plot_Hexagon(M):
-        print('This feature is still in development.')
-        return None
+    def pixel_plot_Hexagon(M,filename,color_scheme='standard'):
+        A = int(round(a*n))
+        B = int(round(b*n))
+        C = int(round(c*n))
+        pixel_hexagon(M,A,B,C,filename=filename,color_scheme=color_scheme)
 
     w = w.astype(complex)
     w = ascontiguousarray(w)
