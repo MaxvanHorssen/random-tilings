@@ -342,7 +342,7 @@ def _compute_pixel_aztec(M, diamond, aztec_gray):
     return image
 
 
-def pixel_aztec(M, filename, orientation='square',
+def pixel_aztec(M, filename, orientation='diamond',
                 color_scheme='standard'):
     """Save an Aztec tiling using a predefined drawing colour scheme."""
     orientation = orientation.lower()
