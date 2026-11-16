@@ -4,6 +4,9 @@ This file records the notable changes made to `RandomTilings`.
 ## Unreleased
 Changes completed after the latest official release will be listed here.
 
+## Version 1.3.0
+*Released on 16.11.2026*
+
 ### Added
 * Added the pixel-plot routine for fast rendering of large tilings.
 
